@@ -14,7 +14,9 @@ Estructura base del portal:
 - `functions/`: API edge per scores i leaderboard a Cloudflare Pages Functions
 - `wrangler.jsonc`: configuracio minima per Pages + D1
 - `cloudflare/schema.sql`: esquema inicial per D1
+- `cloudflare/daily-challenge-seed.sql`: seed/manual minim per activar el repte del dia
 - `docs/cloudflare-scores.md`: guia de desplegament i proves del backend remot
+- `docs/daily-challenges.md`: guia del model i activacio del Daily Challenge
 
 Criteri utilitzat:
 

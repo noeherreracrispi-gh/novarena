@@ -7,6 +7,32 @@
     en: 'en-US',
     it: 'it-IT'
   };
+  var CHALLENGE_COPY = {
+    ca: {
+      title: 'Challenge leaderboard',
+      empty: 'No hi ha repte actiu ara mateix.',
+      summaryPrefix: 'Repte',
+      datePrefix: 'Data'
+    },
+    es: {
+      title: 'Challenge leaderboard',
+      empty: 'No hay reto activo ahora mismo.',
+      summaryPrefix: 'Reto',
+      datePrefix: 'Fecha'
+    },
+    en: {
+      title: 'Challenge leaderboard',
+      empty: 'There is no active challenge right now.',
+      summaryPrefix: 'Challenge',
+      datePrefix: 'Date'
+    },
+    it: {
+      title: 'Challenge leaderboard',
+      empty: 'Non c\'e una sfida attiva in questo momento.',
+      summaryPrefix: 'Sfida',
+      datePrefix: 'Data'
+    }
+  };
 
   function escapeHtml(value) {
     return String(value == null ? '' : value)
@@ -37,6 +63,21 @@
       dateStyle: 'short',
       timeStyle: 'short'
     });
+  }
+
+  function formatDateOnly(value) {
+    var date = value ? new Date(String(value) + 'T00:00:00.000Z') : null;
+    if (!date || Number.isNaN(date.getTime())) {
+      return '-';
+    }
+
+    return date.toLocaleDateString(LOCALES[currentLanguage()] || 'en-US', {
+      dateStyle: 'medium'
+    });
+  }
+
+  function challengeCopy() {
+    return CHALLENGE_COPY[currentLanguage()] || CHALLENGE_COPY.en;
   }
 
   function normalizeGameId(gameId) {
@@ -121,6 +162,11 @@
     return normalizeGameId(params.get('game'));
   }
 
+  function challengeParam() {
+    var params = new URLSearchParams(global.location.search);
+    return params.get('challenge');
+  }
+
   function loadEntries(options) {
     if (!global.Novarena) {
       return Promise.resolve([]);
@@ -133,15 +179,75 @@
     return Promise.resolve(global.Novarena.getLeaderboard(options));
   }
 
+  function loadChallengeEntries(options) {
+    if (!global.Novarena) {
+      return Promise.resolve({ challenge: null, entries: [] });
+    }
+
+    if (typeof global.Novarena.getChallengeLeaderboardAsync === 'function') {
+      return global.Novarena.getChallengeLeaderboardAsync(options);
+    }
+
+    if (typeof global.Novarena.getChallengeLeaderboard === 'function') {
+      return Promise.resolve(global.Novarena.getChallengeLeaderboard(options));
+    }
+
+    return Promise.resolve({ challenge: null, entries: [] });
+  }
+
+  function renderChallengeSection(section, result) {
+    var copy = challengeCopy();
+    var titleNode;
+    var countNode;
+    var bodyNode;
+    var summaryNode;
+    var challenge = result && result.challenge ? result.challenge : null;
+    var entries = result && Array.isArray(result.entries) ? result.entries : [];
+
+    if (!section) {
+      return;
+    }
+
+    titleNode = section.querySelector('[data-leaderboard-title]');
+    countNode = section.querySelector('[data-leaderboard-count]');
+    bodyNode = section.querySelector('[data-leaderboard-body]');
+    summaryNode = section.parentElement ? section.parentElement.querySelector('[data-challenge-summary]') : null;
+
+    if (titleNode) {
+      titleNode.textContent = challenge ? challenge.title : copy.title;
+    }
+
+    if (countNode) {
+      countNode.textContent = String(entries.length);
+    }
+
+    if (summaryNode) {
+      summaryNode.textContent = challenge
+        ? copy.summaryPrefix + ': ' + challenge.description + ' · ' + formatGameLabel(challenge.game) + ' · ' + copy.datePrefix + ': ' + formatDateOnly(challenge.date)
+        : copy.empty;
+    }
+
+    if (bodyNode) {
+      bodyNode.innerHTML = challenge
+        ? tableMarkup(entries)
+        : '<p class="empty-state">' + escapeHtml(copy.empty) + '</p>';
+    }
+  }
+
   async function renderLeaderboard() {
     if (!global.Novarena || typeof global.Novarena.getLeaderboard !== 'function') {
       return;
     }
 
+    var challengeSection = document.querySelector('[data-sdk-leaderboard-challenge]');
     var globalSection = document.querySelector('[data-sdk-leaderboard-global]');
     var gameSection = document.querySelector('[data-sdk-leaderboard-game]');
     var selectedGame = gameParam();
+    var selectedChallenge = challengeParam();
+    var challengeResult = await loadChallengeEntries({ challengeId: selectedChallenge, limit: 10 });
     var globalEntries = await loadEntries({ game: null, limit: 10, order: 'desc' });
+
+    renderChallengeSection(challengeSection, challengeResult);
 
     renderSection(
       globalSection,
@@ -173,6 +279,10 @@
 
   document.addEventListener('DOMContentLoaded', function () {
     renderLeaderboard().catch(function () {
+      renderChallengeSection(
+        document.querySelector('[data-sdk-leaderboard-challenge]'),
+        { challenge: null, entries: [] }
+      );
       renderSection(
         document.querySelector('[data-sdk-leaderboard-global]'),
         t('leaderboard.sections.global', 'Global leaderboard'),

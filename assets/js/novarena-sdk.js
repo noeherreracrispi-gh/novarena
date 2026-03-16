@@ -6,6 +6,8 @@
   var PLAYER_KEY = 'novarena_guest_profile_v1';
   var SCORES_KEY = 'novarena_scores_v1';
   var LEADERBOARD_CACHE_KEY = 'novarena_leaderboard_cache_v1';
+  var CURRENT_CHALLENGE_CACHE_KEY = 'novarena_current_challenge_cache_v1';
+  var CHALLENGE_LEADERBOARD_CACHE_KEY = 'novarena_challenge_leaderboard_cache_v1';
   var GAME_ID_ALIASES = {
     'runner-3d': 'runner3d'
   };
@@ -82,6 +84,36 @@
     return entries.map(normalizeStoredEntry).filter(function (entry) {
       return Boolean(entry);
     });
+  }
+
+  function normalizeChallenge(challenge) {
+    var targetValue = challenge && challenge.targetValue;
+    var numericTarget = targetValue == null || targetValue === ''
+      ? null
+      : Number(targetValue);
+
+    if (!challenge || typeof challenge !== 'object' || !challenge.id) {
+      return null;
+    }
+
+    return {
+      id: String(challenge.id),
+      date: String(challenge.date || ''),
+      game: canonicalGameId(challenge.game),
+      title: String(challenge.title || ''),
+      description: String(challenge.description || ''),
+      metricType: String(challenge.metricType || 'score'),
+      targetValue: Number.isFinite(numericTarget) ? numericTarget : null,
+      isActive: Boolean(challenge.isActive),
+      createdAt: challenge.createdAt || null
+    };
+  }
+
+  function normalizeChallengeLeaderboardPayload(payload) {
+    return {
+      challenge: normalizeChallenge(payload && payload.challenge),
+      entries: normalizeEntryList(payload && payload.entries)
+    };
   }
 
   function getGameContextCandidates(gameId) {
@@ -312,6 +344,28 @@
     writeJsonStorage(LEADERBOARD_CACHE_KEY, cache || {});
   }
 
+  function readCurrentChallengeCache() {
+    return normalizeChallenge(readJsonStorage(CURRENT_CHALLENGE_CACHE_KEY, null));
+  }
+
+  function writeCurrentChallengeCache(challenge) {
+    writeJsonStorage(CURRENT_CHALLENGE_CACHE_KEY, normalizeChallenge(challenge));
+  }
+
+  function readChallengeLeaderboardCache() {
+    var cache = readJsonStorage(CHALLENGE_LEADERBOARD_CACHE_KEY, {});
+
+    if (!cache || typeof cache !== 'object' || Array.isArray(cache)) {
+      return {};
+    }
+
+    return cache;
+  }
+
+  function writeChallengeLeaderboardCache(cache) {
+    writeJsonStorage(CHALLENGE_LEADERBOARD_CACHE_KEY, cache || {});
+  }
+
   function normalizeLeaderboardOptions(options) {
     var normalized = {};
 
@@ -340,6 +394,14 @@
     ].join('|');
   }
 
+  function challengeLeaderboardCacheKey(options) {
+    var normalized = options || {};
+    return [
+      normalized.challengeId || 'current',
+      normalized.limit || DEFAULT_REMOTE_LIMIT
+    ].join('|');
+  }
+
   function getCachedLeaderboard(options) {
     var cache = readLeaderboardCache();
     var entries = cache[leaderboardCacheKey(options)];
@@ -351,6 +413,38 @@
     var cache = readLeaderboardCache();
     cache[leaderboardCacheKey(options)] = normalizeEntryList(entries);
     writeLeaderboardCache(cache);
+  }
+
+  function getCachedChallengeLeaderboard(options) {
+    var cache = readChallengeLeaderboardCache();
+    var result = cache[challengeLeaderboardCacheKey(options)];
+
+    if (!result || typeof result !== 'object') {
+      return null;
+    }
+
+    return normalizeChallengeLeaderboardPayload(result);
+  }
+
+  function setCachedChallengeLeaderboard(options, payload) {
+    var cache = readChallengeLeaderboardCache();
+    cache[challengeLeaderboardCacheKey(options)] = normalizeChallengeLeaderboardPayload(payload);
+    writeChallengeLeaderboardCache(cache);
+  }
+
+  function getFallbackChallenge(options) {
+    var challenge = readCurrentChallengeCache();
+    var normalized = options || {};
+
+    if (!challenge) {
+      return null;
+    }
+
+    if (normalized.challengeId && challenge.id !== normalized.challengeId) {
+      return null;
+    }
+
+    return challenge;
   }
 
   function sortScores(scores, order) {
@@ -374,6 +468,46 @@
     return sortScores(filtered, normalized.order).slice(0, normalized.limit).map(function (entry) {
       return cloneObject(entry);
     });
+  }
+
+  function buildChallengeWindow(dateValue) {
+    var start = new Date(String(dateValue) + 'T00:00:00.000Z');
+    var end;
+
+    if (Number.isNaN(start.getTime())) {
+      return null;
+    }
+
+    end = new Date(start.getTime() + 24 * 60 * 60 * 1000);
+
+    return {
+      start: start.toISOString(),
+      end: end.toISOString()
+    };
+  }
+
+  function buildChallengeLeaderboard(scores, challenge, limit) {
+    var normalizedChallenge = normalizeChallenge(challenge);
+    var window = normalizedChallenge ? buildChallengeWindow(normalizedChallenge.date) : null;
+
+    if (!normalizedChallenge || !window) {
+      return {
+        challenge: normalizedChallenge,
+        entries: []
+      };
+    }
+
+    return {
+      challenge: normalizedChallenge,
+      entries: sortScores(normalizeEntryList(scores).filter(function (entry) {
+        var createdAt = String(entry.createdAt || '');
+        return canonicalGameId(entry.game) === normalizedChallenge.game
+          && createdAt >= window.start
+          && createdAt < window.end;
+      }), 'desc').slice(0, limit || DEFAULT_REMOTE_LIMIT).map(function (entry) {
+        return cloneObject(entry);
+      })
+    };
   }
 
   function buildApiUrl(path, query) {
@@ -469,6 +603,28 @@
 
       getLeaderboardAsync: function (options) {
         return Promise.resolve(buildLeaderboard(readScoresLocal(), options));
+      },
+
+      getCurrentChallenge: function () {
+        return null;
+      },
+
+      getCurrentChallengeAsync: function () {
+        return Promise.resolve(null);
+      },
+
+      getChallengeLeaderboard: function () {
+        return {
+          challenge: null,
+          entries: []
+        };
+      },
+
+      getChallengeLeaderboardAsync: function () {
+        return Promise.resolve({
+          challenge: null,
+          entries: []
+        });
       }
     };
   }
@@ -526,6 +682,73 @@
             ? localProvider.getLeaderboard(normalized)
             : [];
         });
+      },
+
+      getCurrentChallenge: function () {
+        return readCurrentChallengeCache();
+      },
+
+      getCurrentChallengeAsync: function () {
+        return requestJson('GET', 'challenge/current').then(function (payload) {
+          var challenge = normalizeChallenge(payload && payload.challenge);
+          writeCurrentChallengeCache(challenge);
+          return challenge;
+        }).catch(function () {
+          return readCurrentChallengeCache();
+        });
+      },
+
+      getChallengeLeaderboard: function (options) {
+        var normalized = options || {};
+        var cached = getCachedChallengeLeaderboard(normalized);
+        var challenge = cached && cached.challenge ? cached.challenge : getFallbackChallenge(normalized);
+
+        if (cached) {
+          return cached;
+        }
+
+        if (runtimeConfig.remoteFallback && challenge) {
+          return buildChallengeLeaderboard(readScoresLocal(), challenge, normalized.limit);
+        }
+
+        return {
+          challenge: challenge,
+          entries: []
+        };
+      },
+
+      getChallengeLeaderboardAsync: function (options) {
+        var normalized = options || {};
+        var query = {
+          limit: normalized.limit || DEFAULT_REMOTE_LIMIT
+        };
+
+        if (normalized.challengeId) {
+          query.challengeId = normalized.challengeId;
+        }
+
+        return requestJson('GET', 'challenge/leaderboard', { query: query }).then(function (payload) {
+          var result = normalizeChallengeLeaderboardPayload(payload);
+          setCachedChallengeLeaderboard(normalized, result);
+          writeCurrentChallengeCache(result.challenge);
+          return result;
+        }).catch(function () {
+          var cached = getCachedChallengeLeaderboard(normalized);
+          var challenge = cached && cached.challenge ? cached.challenge : getFallbackChallenge(normalized);
+
+          if (cached) {
+            return cached;
+          }
+
+          if (runtimeConfig.remoteFallback && challenge) {
+            return buildChallengeLeaderboard(readScoresLocal(), challenge, normalized.limit);
+          }
+
+          return {
+            challenge: challenge,
+            entries: []
+          };
+        });
       }
     };
   }
@@ -560,6 +783,63 @@
     return Promise.resolve(provider.getLeaderboard(normalized));
   }
 
+  function normalizeChallengeLeaderboardOptions(options) {
+    var normalized = options || {};
+    var limit = Number(normalized.limit);
+
+    return {
+      challengeId: normalized.challengeId ? String(normalized.challengeId) : null,
+      limit: Number.isFinite(limit) && limit > 0
+        ? Math.min(Math.floor(limit), MAX_REMOTE_LIMIT)
+        : DEFAULT_REMOTE_LIMIT
+    };
+  }
+
+  function getCurrentChallenge() {
+    var provider = getProvider();
+
+    if (typeof provider.getCurrentChallenge === 'function') {
+      return provider.getCurrentChallenge();
+    }
+
+    return null;
+  }
+
+  function getCurrentChallengeAsync() {
+    var provider = getProvider();
+
+    if (typeof provider.getCurrentChallengeAsync === 'function') {
+      return provider.getCurrentChallengeAsync();
+    }
+
+    return Promise.resolve(getCurrentChallenge());
+  }
+
+  function getChallengeLeaderboard(options) {
+    var provider = getProvider();
+    var normalized = normalizeChallengeLeaderboardOptions(options);
+
+    if (typeof provider.getChallengeLeaderboard === 'function') {
+      return provider.getChallengeLeaderboard(normalized);
+    }
+
+    return {
+      challenge: null,
+      entries: []
+    };
+  }
+
+  function getChallengeLeaderboardAsync(options) {
+    var provider = getProvider();
+    var normalized = normalizeChallengeLeaderboardOptions(options);
+
+    if (typeof provider.getChallengeLeaderboardAsync === 'function') {
+      return provider.getChallengeLeaderboardAsync(normalized);
+    }
+
+    return Promise.resolve(getChallengeLeaderboard(normalized));
+  }
+
   function getScoresLocal() {
     return readScoresLocal().map(function (entry) {
       return cloneObject(entry);
@@ -584,6 +864,10 @@
     submitScore: submitScore,
     getLeaderboard: getLeaderboard,
     getLeaderboardAsync: getLeaderboardAsync,
+    getCurrentChallenge: getCurrentChallenge,
+    getCurrentChallengeAsync: getCurrentChallengeAsync,
+    getChallengeLeaderboard: getChallengeLeaderboard,
+    getChallengeLeaderboardAsync: getChallengeLeaderboardAsync,
     getPlayer: getPlayer,
     getScoresLocal: getScoresLocal,
     getLanguage: getLanguage,

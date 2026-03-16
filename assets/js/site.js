@@ -12,6 +12,44 @@ var DEFAULT_TOP_PLAYERS = [
   { name: 'ArcadeLia', mockFavorite: 'Break Block', mockTotal: 9980 },
   { name: 'KiroZen', mockFavorite: 'Snake', mockTotal: 9450 }
 ];
+var HOME_CHALLENGE_COPY = {
+  ca: {
+    eyebrow: 'Repte del dia',
+    title: 'Juga el repte destacat d\'avui',
+    emptyTitle: 'No hi ha repte actiu ara mateix',
+    emptyBody: 'Torna mes tard o entra a qualsevol joc per continuar sumant punts.',
+    challengeLeaderboard: 'Veure challenge leaderboard',
+    target: 'Objectiu',
+    live: 'Actiu avui'
+  },
+  es: {
+    eyebrow: 'Reto del dia',
+    title: 'Juega el reto destacado de hoy',
+    emptyTitle: 'No hay reto activo ahora mismo',
+    emptyBody: 'Vuelve mas tarde o entra en cualquier juego para seguir sumando puntos.',
+    challengeLeaderboard: 'Ver challenge leaderboard',
+    target: 'Objetivo',
+    live: 'Activo hoy'
+  },
+  en: {
+    eyebrow: 'Daily Challenge',
+    title: 'Play today\'s featured challenge',
+    emptyTitle: 'There is no active challenge right now',
+    emptyBody: 'Come back later or jump into any game and keep scoring.',
+    challengeLeaderboard: 'View challenge leaderboard',
+    target: 'Target',
+    live: 'Live today'
+  },
+  it: {
+    eyebrow: 'Sfida del giorno',
+    title: 'Gioca la sfida in evidenza di oggi',
+    emptyTitle: 'Non c\'e una sfida attiva in questo momento',
+    emptyBody: 'Torna piu tardi o entra in qualsiasi gioco per continuare a fare punti.',
+    challengeLeaderboard: 'Vedi challenge leaderboard',
+    target: 'Obiettivo',
+    live: 'Attiva oggi'
+  }
+};
 
 async function fetchJson(path) {
   var response = await fetch(path, { cache: 'no-store' });
@@ -19,6 +57,15 @@ async function fetchJson(path) {
     throw new Error('Failed to load ' + path);
   }
   return response.json();
+}
+
+function escapeHtml(value) {
+  return String(value == null ? '' : value)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
 }
 
 async function loadGames() {
@@ -50,6 +97,17 @@ function localizedGameData(game) {
     path: game.path,
     thumbnail: game.thumbnail
   };
+}
+
+function findGameById(games, gameId) {
+  return (games || []).find(function (game) {
+    return game && game.id === gameId;
+  }) || null;
+}
+
+function getHomeChallengeCopy() {
+  var lang = typeof getCurrentLanguage === 'function' ? getCurrentLanguage() : 'en';
+  return HOME_CHALLENGE_COPY[lang] || HOME_CHALLENGE_COPY.en;
 }
 
 function gameCardTemplate(game) {
@@ -216,6 +274,107 @@ function renderCurrentYear() {
   document.querySelectorAll('[data-current-year]').forEach(function (node) {
     node.textContent = String(new Date().getFullYear());
   });
+}
+
+async function renderCurrentChallenge() {
+  var shell = document.querySelector('[data-daily-challenge]');
+  var copy = getHomeChallengeCopy();
+  var eyebrowNode = document.querySelector('[data-daily-challenge-eyebrow]');
+  var titleNode = document.querySelector('[data-daily-challenge-title]');
+  var results;
+  var challenge;
+  var games;
+  var game;
+  var gameInfo;
+  var challengeDate;
+  var targetMarkup;
+  var metaMarkup;
+
+  if (!shell) {
+    return;
+  }
+
+  if (eyebrowNode) {
+    eyebrowNode.textContent = copy.eyebrow;
+  }
+
+  if (titleNode) {
+    titleNode.textContent = copy.title;
+  }
+
+  if (!window.Novarena || typeof window.Novarena.getCurrentChallengeAsync !== 'function') {
+    shell.innerHTML = [
+      '<article class="challenge-spotlight challenge-empty">',
+      '  <div class="challenge-copy">',
+      '    <p class="eyebrow">' + escapeHtml(copy.eyebrow) + '</p>',
+      '    <h3>' + escapeHtml(copy.emptyTitle) + '</h3>',
+      '    <p>' + escapeHtml(copy.emptyBody) + '</p>',
+      '  </div>',
+      '</article>'
+    ].join('');
+    return;
+  }
+
+  results = await Promise.all([
+    window.Novarena.getCurrentChallengeAsync(),
+    loadGames()
+  ]);
+  challenge = results[0];
+  games = results[1];
+
+  if (!challenge) {
+    shell.innerHTML = [
+      '<article class="challenge-spotlight challenge-empty">',
+      '  <div class="challenge-copy">',
+      '    <p class="eyebrow">' + escapeHtml(copy.eyebrow) + '</p>',
+      '    <h3>' + escapeHtml(copy.emptyTitle) + '</h3>',
+      '    <p>' + escapeHtml(copy.emptyBody) + '</p>',
+      '  </div>',
+      '</article>'
+    ].join('');
+    return;
+  }
+
+  game = findGameById(games, challenge.game);
+  gameInfo = game ? localizedGameData(game) : {
+    title: challenge.game,
+    description: '',
+    category: challenge.game,
+    path: 'games/' + challenge.game + '/index.html',
+    thumbnail: ''
+  };
+  challengeDate = new Date(String(challenge.date) + 'T00:00:00.000Z');
+  targetMarkup = challenge.targetValue == null
+    ? ''
+    : '<span class="challenge-chip">' + escapeHtml(copy.target) + ': ' + escapeHtml(formatScore(challenge.targetValue)) + '</span>';
+  metaMarkup = [
+    '<span class="challenge-chip">' + escapeHtml(gameInfo.title) + '</span>',
+    '<span class="challenge-chip">' + escapeHtml(copy.live) + '</span>'
+  ];
+
+  if (targetMarkup) {
+    metaMarkup.push(targetMarkup);
+  }
+
+  shell.innerHTML = [
+    '<article class="challenge-spotlight">',
+    '  <div class="challenge-copy">',
+    '    <p class="eyebrow">' + escapeHtml(copy.eyebrow) + '</p>',
+    '    <h2>' + escapeHtml(challenge.title) + '</h2>',
+    '    <p>' + escapeHtml(challenge.description) + '</p>',
+    '    <div class="challenge-meta-row">' + metaMarkup.join('') + '</div>',
+    '    <div class="challenge-actions">',
+    '      <a class="button button-primary" href="' + escapeHtml(gameInfo.path) + '">' + escapeHtml(t('common.play', 'Play')) + '</a>',
+    '      <a class="button button-secondary" href="leaderboard.html?challenge=' + encodeURIComponent(challenge.id) + '">' + escapeHtml(copy.challengeLeaderboard) + '</a>',
+    '    </div>',
+    '  </div>',
+    '  <div class="challenge-side">',
+    '    <span class="challenge-kicker">' + escapeHtml(gameInfo.category) + '</span>',
+    '    <strong>' + escapeHtml(Number.isNaN(challengeDate.getTime()) ? challenge.date : challengeDate.toLocaleDateString()) + '</strong>',
+    '    <p>' + escapeHtml(gameInfo.description || challenge.description) + '</p>',
+    '  </div>',
+    '</article>'
+  ].join('');
 }
 
 document.addEventListener('DOMContentLoaded', function () {

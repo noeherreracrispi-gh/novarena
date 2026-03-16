@@ -31,7 +31,7 @@ var I18N = {
       loadingGames: 'Carregant jocs...',
       loadingLeaderboard: 'Carregant leaderboard...',
       loadingTopPlayers: 'Carregant top players...',
-      emptyLeaderboard: 'Encara no hi ha puntuacions guardades a data/players.json.',
+      emptyLeaderboard: 'Encara no hi ha puntuacions guardades.',
       emptyTopPlayers: 'Encara no hi ha top players guardats. La primera gran partida pot ser la teva.',
       position: 'Posicio',
       player: 'Jugador',
@@ -192,7 +192,7 @@ var I18N = {
       loadingGames: 'Cargando juegos...',
       loadingLeaderboard: 'Cargando leaderboard...',
       loadingTopPlayers: 'Cargando top players...',
-      emptyLeaderboard: 'Todavia no hay puntuaciones guardadas en data/players.json.',
+      emptyLeaderboard: 'Todavia no hay puntuaciones guardadas.',
       emptyTopPlayers: 'Todavia no hay top players guardados. La primera gran partida puede ser la tuya.',
       position: 'Posicion',
       player: 'Jugador',
@@ -353,7 +353,7 @@ var I18N = {
       loadingGames: 'Loading games...',
       loadingLeaderboard: 'Loading leaderboard...',
       loadingTopPlayers: 'Loading top players...',
-      emptyLeaderboard: 'There are no saved scores in data/players.json yet.',
+      emptyLeaderboard: 'There are no saved scores yet.',
       emptyTopPlayers: 'There are no saved top players yet. The first great run could be yours.',
       position: 'Position',
       player: 'Player',
@@ -514,7 +514,7 @@ var I18N = {
       loadingGames: 'Caricamento giochi...',
       loadingLeaderboard: 'Caricamento classifica...',
       loadingTopPlayers: 'Caricamento top players...',
-      emptyLeaderboard: 'Non ci sono ancora punteggi salvati in data/players.json.',
+      emptyLeaderboard: 'Non ci sono ancora punteggi salvati.',
       emptyTopPlayers: 'Non ci sono ancora top players salvati. La prima grande partita potrebbe essere la tua.',
       position: 'Posizione',
       player: 'Giocatore',
@@ -764,6 +764,9 @@ function setLanguage(lang, persist) {
   }
   if (typeof renderTopPlayers === 'function') {
     renderTopPlayers();
+  }
+  if (typeof renderCurrentChallenge === 'function') {
+    renderCurrentChallenge();
   }
 }
 

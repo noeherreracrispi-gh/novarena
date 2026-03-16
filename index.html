@@ -7,6 +7,7 @@
   <meta name="description" content="Novarena es un portal de jocs pensat per entrar, triar partida i jugar en segons.">
   <link rel="stylesheet" href="assets/css/site.css">
   <script src="assets/js/i18n.js" defer></script>
+  <script src="assets/js/novarena-sdk.js" defer></script>
   <script src="assets/js/site.js" defer></script>
   <style>
     .home-main {
@@ -238,6 +239,82 @@
       font-family: 'Orbitron', sans-serif;
     }
 
+    .challenge-spotlight {
+      display: grid;
+      grid-template-columns: minmax(0, 1.2fr) minmax(240px, .8fr);
+      gap: 20px;
+      padding: 24px 28px;
+      border-radius: 30px;
+      border: 1px solid var(--border);
+      background:
+        radial-gradient(circle at top right, rgba(245,158,11,.16) 0%, transparent 28%),
+        linear-gradient(180deg, rgba(255,255,255,.06), rgba(255,255,255,.03));
+      backdrop-filter: blur(16px);
+      box-shadow: 0 22px 55px rgba(0,0,0,.28);
+    }
+
+    .challenge-copy h2 {
+      margin: 0 0 10px;
+      font-family: 'Orbitron', sans-serif;
+      font-size: clamp(24px, 4vw, 36px);
+    }
+
+    .challenge-copy p,
+    .challenge-side p {
+      margin: 0;
+      color: var(--muted);
+      line-height: 1.7;
+    }
+
+    .challenge-meta-row,
+    .challenge-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-top: 18px;
+    }
+
+    .challenge-chip,
+    .challenge-kicker {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      padding: 8px 12px;
+      border-radius: 999px;
+      border: 1px solid rgba(255,255,255,.08);
+      background: rgba(255,255,255,.05);
+      color: #fff;
+      font-size: 11px;
+      letter-spacing: .12em;
+      text-transform: uppercase;
+      font-family: 'Orbitron', sans-serif;
+    }
+
+    .challenge-kicker {
+      color: var(--gold);
+      border-color: rgba(245,158,11,.28);
+      background: rgba(245,158,11,.12);
+    }
+
+    .challenge-side {
+      display: grid;
+      align-content: start;
+      gap: 12px;
+      padding: 18px;
+      border-radius: 24px;
+      border: 1px solid rgba(255,255,255,.08);
+      background: rgba(255,255,255,.04);
+    }
+
+    .challenge-side strong {
+      font-family: 'Orbitron', sans-serif;
+      font-size: 20px;
+    }
+
+    .challenge-empty {
+      grid-template-columns: 1fr;
+    }
+
     .section-shell {
       width: min(calc(100% - 32px), 1200px);
       margin: 0 auto;
@@ -385,7 +462,8 @@
 
     @media (max-width: 920px) {
       .hero-play,
-      .cta-panel {
+      .cta-panel,
+      .challenge-spotlight {
         grid-template-columns: 1fr;
         flex-direction: column;
         align-items: flex-start;
@@ -494,6 +572,18 @@
             </div>
           </article>
         </aside>
+      </div>
+    </section>
+
+    <section class="section-shell">
+      <div class="section-head">
+        <div>
+          <p class="eyebrow" data-daily-challenge-eyebrow>Daily Challenge</p>
+          <h2 data-daily-challenge-title>Repte del dia</h2>
+        </div>
+      </div>
+      <div data-daily-challenge>
+        <p class="loading-state">Carregant repte...</p>
       </div>
     </section>
 
