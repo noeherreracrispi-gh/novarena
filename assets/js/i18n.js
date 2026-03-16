@@ -768,8 +768,14 @@ function setLanguage(lang, persist) {
   if (typeof renderCurrentChallenge === 'function') {
     renderCurrentChallenge();
   }
+  if (typeof renderHomeActivity === 'function') {
+    renderHomeActivity();
+  }
   if (typeof renderProfilePage === 'function') {
     renderProfilePage();
+  }
+  if (typeof renderActivityPage === 'function') {
+    renderActivityPage();
   }
 }
 

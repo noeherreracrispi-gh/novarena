@@ -9,6 +9,7 @@
   var CURRENT_CHALLENGE_CACHE_KEY = 'novarena_current_challenge_cache_v1';
   var CHALLENGE_LEADERBOARD_CACHE_KEY = 'novarena_challenge_leaderboard_cache_v1';
   var CURRENT_PROFILE_CACHE_KEY = 'novarena_current_profile_cache_v1';
+  var ACTIVITY_CACHE_KEY = 'novarena_activity_cache_v1';
   var GAME_ID_ALIASES = {
     'runner-3d': 'runner3d'
   };
@@ -21,9 +22,38 @@
   var MAX_REMOTE_LIMIT = 100;
   var DEFAULT_PROFILE_RECENT_LIMIT = 6;
   var MAX_PROFILE_RECENT_LIMIT = 20;
+  var DEFAULT_PLAYER_NAME_FALLBACK = 'Player';
+  var NAME_PROMPT_COPY = {
+    ca: {
+      title: 'Introdueix el teu nom per guardar la puntuacio',
+      label: 'Nom de jugador',
+      placeholder: 'Escriu el teu nom',
+      button: 'Guardar'
+    },
+    es: {
+      title: 'Introduce tu nombre para guardar la puntuacion',
+      label: 'Nombre de jugador',
+      placeholder: 'Escribe tu nombre',
+      button: 'Guardar'
+    },
+    en: {
+      title: 'Enter your name to save your score',
+      label: 'Player name',
+      placeholder: 'Type your name',
+      button: 'Save'
+    },
+    it: {
+      title: 'Inserisci il tuo nome per salvare il punteggio',
+      label: 'Nome giocatore',
+      placeholder: 'Scrivi il tuo nome',
+      button: 'Salva'
+    }
+  };
   var contextCache = {};
   var api = null;
   var runtimeConfig = null;
+  var queuedUnnamedScores = [];
+  var activeNamePrompt = null;
 
   function resolveLanguage(lang) {
     var value = String(lang || '').toLowerCase().split('-')[0];
@@ -72,11 +102,38 @@
     return {
       game: canonicalGameId(entry.game),
       playerId: String(entry.playerId || ''),
-      playerName: String(entry.playerName || 'Player'),
+      playerName: String(entry.playerName || DEFAULT_PLAYER_NAME_FALLBACK),
       score: score,
       scoreType: String(entry.scoreType || 'points'),
       createdAt: entry.createdAt || new Date().toISOString()
     };
+  }
+
+  function normalizeActivityItem(item) {
+    var score = Number(item && item.score);
+
+    if (!item || !item.game || !Number.isFinite(score)) {
+      return null;
+    }
+
+    return {
+      type: 'score',
+      playerId: String(item.playerId || ''),
+      playerName: String(item.playerName || DEFAULT_PLAYER_NAME_FALLBACK),
+      game: canonicalGameId(item.game),
+      score: score,
+      createdAt: item.createdAt || new Date().toISOString()
+    };
+  }
+
+  function normalizeActivityList(items) {
+    if (!Array.isArray(items)) {
+      return [];
+    }
+
+    return items.map(normalizeActivityItem).filter(function (item) {
+      return Boolean(item);
+    });
   }
 
   function normalizeEntryList(entries) {
@@ -126,9 +183,10 @@
 
     return {
       id: String(player.id),
-      name: String(player.name || 'Guest'),
+      name: String(player.name || ''),
       type: String(player.type || 'guest'),
-      source: String(player.source || 'local')
+      source: String(player.source || 'local'),
+      hasCustomName: player.hasCustomName === true
     };
   }
 
@@ -209,15 +267,44 @@
     var guestId = 'guest-' + Math.random().toString(16).slice(2, 10);
     return {
       id: guestId,
-      name: 'Guest ' + guestId.slice(-4).toUpperCase(),
+      name: '',
       type: 'guest',
-      source: 'local'
+      source: 'local',
+      hasCustomName: false
     };
   }
 
+  function normalizePlayerRecord(player) {
+    var normalized = normalizePlayerProfile(player);
+    var guestNamePattern;
+
+    if (!normalized) {
+      return null;
+    }
+
+    guestNamePattern = /^Guest [A-Z0-9]{4,}$/;
+
+    if (typeof player.hasCustomName !== 'boolean') {
+      normalized.hasCustomName = Boolean(normalized.name) && !guestNamePattern.test(normalized.name);
+    }
+
+    return normalized;
+  }
+
+  function playerHasExplicitName(player) {
+    var normalized = normalizePlayerRecord(player);
+    return Boolean(normalized && normalized.hasCustomName && normalized.name);
+  }
+
+  function playerDisplayName(player) {
+    var normalized = normalizePlayerRecord(player);
+    return normalized && normalized.name ? normalized.name : DEFAULT_PLAYER_NAME_FALLBACK;
+  }
+
   function getPlayer() {
-    var stored = readJsonStorage(PLAYER_KEY, null);
-    if (stored && stored.id && stored.name) {
+    var stored = normalizePlayerRecord(readJsonStorage(PLAYER_KEY, null));
+    if (stored && stored.id) {
+      writeJsonStorage(PLAYER_KEY, stored);
       return stored;
     }
 
@@ -359,7 +446,7 @@
     return normalizeStoredEntry({
       game: canonicalGameId(payload.game),
       playerId: String(payload.playerId || player.id),
-      playerName: String(payload.playerName || player.name),
+      playerName: String(payload.playerName || playerDisplayName(player)),
       score: score,
       scoreType: String(payload.scoreType || 'points'),
       createdAt: payload.createdAt || new Date().toISOString()
@@ -424,6 +511,20 @@
     writeJsonStorage(CURRENT_PROFILE_CACHE_KEY, cache || {});
   }
 
+  function readActivityCache() {
+    var cache = readJsonStorage(ACTIVITY_CACHE_KEY, {});
+
+    if (!cache || typeof cache !== 'object' || Array.isArray(cache)) {
+      return {};
+    }
+
+    return cache;
+  }
+
+  function writeActivityCache(cache) {
+    writeJsonStorage(ACTIVITY_CACHE_KEY, cache || {});
+  }
+
   function normalizeLeaderboardOptions(options) {
     var normalized = {};
 
@@ -471,6 +572,18 @@
     };
   }
 
+  function normalizeActivityOptions(options) {
+    var normalized = options || {};
+    var limit = Number(normalized.limit);
+
+    return {
+      game: normalized.game ? canonicalGameId(normalized.game) : null,
+      limit: Number.isFinite(limit) && limit > 0
+        ? Math.min(Math.floor(limit), MAX_REMOTE_LIMIT)
+        : DEFAULT_REMOTE_LIMIT
+    };
+  }
+
   function currentProfileCacheKey(player, options) {
     var normalizedPlayer = normalizePlayerProfile(player) || getPlayer();
     var normalizedOptions = normalizeProfileOptions(options);
@@ -478,6 +591,15 @@
     return [
       normalizedPlayer.id,
       normalizedOptions.recentLimit
+    ].join('|');
+  }
+
+  function activityCacheKey(options) {
+    var normalized = normalizeActivityOptions(options);
+
+    return [
+      normalized.game || 'all',
+      normalized.limit
     ].join('|');
   }
 
@@ -526,6 +648,19 @@
     var cache = readCurrentProfileCache();
     cache[currentProfileCacheKey(player, options)] = normalizeCurrentProfile(payload);
     writeCurrentProfileCache(cache);
+  }
+
+  function getCachedActivity(options) {
+    var cache = readActivityCache();
+    var items = cache[activityCacheKey(options)];
+
+    return Array.isArray(items) ? normalizeActivityList(items) : null;
+  }
+
+  function setCachedActivity(options, items) {
+    var cache = readActivityCache();
+    cache[activityCacheKey(options)] = normalizeActivityList(items);
+    writeActivityCache(cache);
   }
 
   function getFallbackChallenge(options) {
@@ -674,6 +809,27 @@
     });
   }
 
+  function buildActivity(scores, options) {
+    var normalized = normalizeActivityOptions(options);
+
+    return normalizeEntryList(scores).filter(function (entry) {
+      return !normalized.game || canonicalGameId(entry.game) === normalized.game;
+    }).sort(function (left, right) {
+      var leftDate = String(left.createdAt || '');
+      var rightDate = String(right.createdAt || '');
+
+      if (leftDate !== rightDate) {
+        return rightDate.localeCompare(leftDate);
+      }
+
+      return right.score - left.score;
+    }).slice(0, normalized.limit).map(function (entry) {
+      return normalizeActivityItem(entry);
+    }).filter(function (item) {
+      return Boolean(item);
+    });
+  }
+
   function buildCurrentProfileFromScores(scores, player, challenge, options) {
     var normalizedPlayer = normalizePlayerProfile(player) || getPlayer();
     var normalizedOptions = normalizeProfileOptions(options);
@@ -698,6 +854,173 @@
         totalPlayers: challengeEntries.length,
         entry: challengeEntry
       }
+    });
+  }
+
+  function namePromptCopy() {
+    return NAME_PROMPT_COPY[getLanguage()] || NAME_PROMPT_COPY.en;
+  }
+
+  function clearCurrentProfileCache() {
+    writeCurrentProfileCache({});
+  }
+
+  function clearActivityCache() {
+    writeActivityCache({});
+  }
+
+  function setPlayerRecord(player) {
+    var normalized = normalizePlayerRecord(player);
+
+    if (!normalized) {
+      return getPlayer();
+    }
+
+    writeJsonStorage(PLAYER_KEY, normalized);
+    clearCurrentProfileCache();
+    return normalized;
+  }
+
+  function setPlayerName(name) {
+    var trimmed = String(name == null ? '' : name).trim();
+    var current = getPlayer();
+    var updated;
+
+    if (!trimmed) {
+      throw new Error('Novarena.setPlayerName(name) requires a non-empty name.');
+    }
+
+    updated = setPlayerRecord({
+      id: current.id,
+      name: trimmed.slice(0, 64),
+      type: current.type,
+      source: current.source,
+      hasCustomName: true
+    });
+
+    if (typeof global.dispatchEvent === 'function' && typeof global.CustomEvent === 'function') {
+      global.dispatchEvent(new global.CustomEvent('novarena:player-updated', {
+        detail: cloneObject(updated)
+      }));
+    }
+
+    return cloneObject(updated);
+  }
+
+  function ensureNamePromptStyles() {
+    if (document.getElementById('novarena-name-prompt-style')) {
+      return;
+    }
+
+    var style = document.createElement('style');
+    style.id = 'novarena-name-prompt-style';
+    style.textContent = [
+      '.novarena-name-prompt-backdrop{position:fixed;inset:0;background:rgba(3,8,20,.82);display:flex;align-items:center;justify-content:center;padding:24px;z-index:9999;}',
+      '.novarena-name-prompt{width:min(420px,100%);background:#0c1322;border:1px solid rgba(104,216,255,.22);border-radius:24px;box-shadow:0 24px 80px rgba(0,0,0,.45);padding:24px;color:#edf5ff;font-family:inherit;}',
+      '.novarena-name-prompt h2{margin:0 0 10px;font-size:22px;line-height:1.2;}',
+      '.novarena-name-prompt p,.novarena-name-prompt label{color:#9db2c9;line-height:1.6;font-size:14px;}',
+      '.novarena-name-prompt input{width:100%;margin-top:8px;padding:14px 16px;border-radius:14px;border:1px solid rgba(104,216,255,.26);background:#08111f;color:#edf5ff;font:inherit;}',
+      '.novarena-name-prompt button{margin-top:16px;width:100%;padding:14px 18px;border:none;border-radius:999px;background:linear-gradient(135deg,#0ea5e9,#7c3aed);color:#fff;font:inherit;font-weight:700;cursor:pointer;}',
+      '.novarena-name-prompt small{display:block;margin-top:10px;color:#6f869f;}'
+    ].join('');
+    document.head.appendChild(style);
+  }
+
+  function closeActiveNamePrompt() {
+    if (!activeNamePrompt) {
+      return;
+    }
+
+    if (activeNamePrompt.backdrop && activeNamePrompt.backdrop.parentNode) {
+      activeNamePrompt.backdrop.parentNode.removeChild(activeNamePrompt.backdrop);
+    }
+
+    activeNamePrompt = null;
+  }
+
+  function promptForPlayerName() {
+    if (activeNamePrompt && activeNamePrompt.promise) {
+      return activeNamePrompt.promise;
+    }
+
+    if (!document || !document.body) {
+      return Promise.reject(new Error('Document body is not available for the player-name prompt.'));
+    }
+
+    ensureNamePromptStyles();
+
+    var copy = namePromptCopy();
+    var player = getPlayer();
+    var backdrop = document.createElement('div');
+    var dialog = document.createElement('form');
+    var label = document.createElement('label');
+    var input = document.createElement('input');
+    var button = document.createElement('button');
+    var hint = document.createElement('small');
+    var title = document.createElement('h2');
+    var promise = new Promise(function (resolve) {
+      backdrop.className = 'novarena-name-prompt-backdrop';
+      dialog.className = 'novarena-name-prompt';
+      title.textContent = copy.title;
+      label.textContent = copy.label;
+      input.type = 'text';
+      input.name = 'playerName';
+      input.maxLength = 64;
+      input.autocomplete = 'nickname';
+      input.placeholder = copy.placeholder;
+      input.value = player.hasCustomName ? player.name : '';
+      button.type = 'submit';
+      button.textContent = copy.button;
+      hint.textContent = player.id;
+
+      label.appendChild(input);
+      dialog.appendChild(title);
+      dialog.appendChild(label);
+      dialog.appendChild(button);
+      dialog.appendChild(hint);
+      backdrop.appendChild(dialog);
+      document.body.appendChild(backdrop);
+      global.setTimeout(function () {
+        input.focus();
+        input.select();
+      }, 0);
+
+      dialog.addEventListener('submit', function (event) {
+        event.preventDefault();
+
+        if (!String(input.value || '').trim()) {
+          input.focus();
+          return;
+        }
+
+        resolve(setPlayerName(input.value));
+        closeActiveNamePrompt();
+      });
+    });
+
+    activeNamePrompt = {
+      backdrop: backdrop,
+      promise: promise
+    };
+
+    return promise;
+  }
+
+  function flushQueuedUnnamedScores(provider) {
+    var player = getPlayer();
+    var entries = queuedUnnamedScores.splice(0, queuedUnnamedScores.length).map(function (entry) {
+      return normalizeStoredEntry({
+        game: entry.game,
+        playerId: player.id,
+        playerName: playerDisplayName(player),
+        score: entry.score,
+        scoreType: entry.scoreType,
+        createdAt: entry.createdAt
+      });
+    });
+
+    entries.forEach(function (entry) {
+      provider.submitScore(entry);
     });
   }
 
@@ -779,6 +1102,8 @@
         var scores = readScoresLocal();
         scores.push(entry);
         writeScoresLocal(scores);
+        clearActivityCache();
+        clearCurrentProfileCache();
         return cloneObject(entry);
       },
 
@@ -794,6 +1119,14 @@
 
       getLeaderboardAsync: function (options) {
         return Promise.resolve(buildLeaderboard(readScoresLocal(), options));
+      },
+
+      getActivity: function (options) {
+        return buildActivity(readScoresLocal(), options);
+      },
+
+      getActivityAsync: function (options) {
+        return Promise.resolve(buildActivity(readScoresLocal(), options));
       },
 
       getCurrentChallenge: function () {
@@ -889,6 +1222,45 @@
 
           return runtimeConfig.remoteFallback
             ? localProvider.getLeaderboard(normalized)
+            : [];
+        });
+      },
+
+      getActivity: function (options) {
+        var cached = getCachedActivity(options);
+
+        if (cached) {
+          return cached;
+        }
+
+        return runtimeConfig.remoteFallback
+          ? localProvider.getActivity(options)
+          : [];
+      },
+
+      getActivityAsync: function (options) {
+        var normalized = normalizeActivityOptions(options);
+        var query = {
+          limit: normalized.limit
+        };
+
+        if (normalized.game) {
+          query.game = normalized.game;
+        }
+
+        return requestJson('GET', 'activity', { query: query }).then(function (payload) {
+          var items = normalizeActivityList(payload && payload.items);
+          setCachedActivity(normalized, items);
+          return items;
+        }).catch(function () {
+          var cached = getCachedActivity(normalized);
+
+          if (cached) {
+            return cached;
+          }
+
+          return runtimeConfig.remoteFallback
+            ? localProvider.getActivity(normalized)
             : [];
         });
       },
@@ -991,7 +1363,7 @@
         return requestJson('GET', 'profile/current', {
           query: {
             playerId: player.id,
-            playerName: player.name,
+            playerName: playerDisplayName(player),
             recentLimit: normalized.recentLimit
           }
         }).then(function (payload) {
@@ -1041,7 +1413,19 @@
 
   function submitScore(scoreData) {
     var entry = normalizeScorePayload(scoreData);
-    return getProvider().submitScore(entry);
+    var provider = getProvider();
+
+    if (!playerHasExplicitName(getPlayer())) {
+      queuedUnnamedScores.push(entry);
+      promptForPlayerName().then(function () {
+        flushQueuedUnnamedScores(provider);
+      }).catch(function () {
+        queuedUnnamedScores.length = 0;
+      });
+      return cloneObject(entry);
+    }
+
+    return provider.submitScore(entry);
   }
 
   function getLeaderboard(options) {
@@ -1057,6 +1441,28 @@
     }
 
     return Promise.resolve(provider.getLeaderboard(normalized));
+  }
+
+  function getActivity(options) {
+    var provider = getProvider();
+    var normalized = normalizeActivityOptions(options);
+
+    if (typeof provider.getActivity === 'function') {
+      return provider.getActivity(normalized);
+    }
+
+    return [];
+  }
+
+  function getActivityAsync(options) {
+    var provider = getProvider();
+    var normalized = normalizeActivityOptions(options);
+
+    if (typeof provider.getActivityAsync === 'function') {
+      return provider.getActivityAsync(normalized);
+    }
+
+    return Promise.resolve(getActivity(normalized));
   }
 
   function normalizeChallengeLeaderboardOptions(options) {
@@ -1170,9 +1576,12 @@
     storageMode: runtimeConfig.storageMode,
     configure: configure,
     getConfig: getConfig,
+    setPlayerName: setPlayerName,
     submitScore: submitScore,
     getLeaderboard: getLeaderboard,
     getLeaderboardAsync: getLeaderboardAsync,
+    getActivity: getActivity,
+    getActivityAsync: getActivityAsync,
     getCurrentChallenge: getCurrentChallenge,
     getCurrentChallengeAsync: getCurrentChallengeAsync,
     getChallengeLeaderboard: getChallengeLeaderboard,

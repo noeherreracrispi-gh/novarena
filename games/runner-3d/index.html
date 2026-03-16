@@ -71,7 +71,10 @@
       background: rgba(0,0,15,.8); color: #0ff; text-decoration: none;
       text-transform: uppercase; letter-spacing: 3px; font-size: 10px; font-weight: bold;
       box-shadow: 0 0 18px rgba(0,255,255,.22);
-      transition: transform .2s, box-shadow .2s, border-color .2s, background .2s;
+      transition: top .2s, transform .2s, box-shadow .2s, border-color .2s, background .2s;
+    }
+    .home-link.in-game {
+      top: 84px;
     }
     .home-link:hover {
       transform: translateY(-1px);
@@ -145,12 +148,15 @@
         top: 12px; left: 12px; padding: 8px 12px;
         font-size: 9px; letter-spacing: 2px;
       }
+      .home-link.in-game {
+        top: 72px;
+      }
     }
   </style>
 </head>
 <body>
 
-<a class="home-link" href="../../index.html" aria-label="Tornar a la pagina principal">&larr; Inici</a>
+<a class="home-link" href="../../index.html" onclick="if (window.history.length > 1) { window.history.back(); return false; }" aria-label="Tornar enrere">&larr; Enrere</a>
 
 <canvas id="canvas"></canvas>
 
@@ -890,6 +896,8 @@ let magnetTime = 0;
 let powerFill   = 0;   // 0-1 for power bar
 let turboActive = false;
 let turboBlend  = 0;
+const TURBO_END_IMMUNITY = 0.5;
+let turboEndImmunity = 0;
 let lives       = 3;
 let invincible  = false;
 let invTimer    = 0;
@@ -916,6 +924,7 @@ const powerBar    = document.getElementById('powerbar');
 const turboLbl    = document.getElementById('turboLbl');
 const turboBanner = document.getElementById('turbo-banner');
 const screenFlash = document.getElementById('screen-flash');
+const homeLink    = document.querySelector('.home-link');
 
 hBest.textContent = best;
 
@@ -1083,6 +1092,7 @@ function showStart() {
   overlay.style.display = 'flex';
   hud.style.display = 'none';
   powerWrap.style.display = 'none';
+  homeLink.classList.remove('in-game');
   document.getElementById('startBtn').addEventListener('click', startGame);
 }
 
@@ -1097,6 +1107,7 @@ function showGameOver() {
   overlay.style.display = 'flex';
   hud.style.display = 'none';
   powerWrap.style.display = 'none';
+  homeLink.classList.remove('in-game');
   document.getElementById('startBtn').addEventListener('click', startGame);
 }
 
@@ -1119,6 +1130,7 @@ function startGame() {
   shielded = false; shieldTime = 0; shield.visible = false;
   magnetActive = false; magnetTime = 0;
   powerFill = 0; turboActive = false;
+  turboEndImmunity = 0;
   fireball.visible = false; fireCore.visible = false; fireAura.visible = false;
   firePL.intensity = 0;
   playerBodyParts.forEach(m => { m.visible = true; });
@@ -1148,6 +1160,7 @@ function startGame() {
   overlay.style.display = 'none';
   hud.style.display = 'flex';
   powerWrap.style.display = 'block';
+  homeLink.classList.add('in-game');
   hBest.textContent = best;
 }
 
@@ -1230,7 +1243,11 @@ function animate() {
     // Power bar
     if (turboActive) {
       powerFill -= 0.003;
-      if (powerFill <= 0) { powerFill = 0; turboActive = false; }
+      if (powerFill <= 0) {
+        powerFill = 0;
+        turboActive = false;
+        turboEndImmunity = TURBO_END_IMMUNITY;
+      }
       spd *= 1.6;
       camera.fov += (80 - camera.fov) * 0.1;
     } else {
@@ -1297,6 +1314,10 @@ function animate() {
       invTimer -= 1/60;
       player.visible = Math.floor(invTimer * 8) % 2 === 0;
       if (invTimer <= 0) { invincible = false; player.visible = true; }
+    }
+    if (turboEndImmunity > 0) {
+      turboEndImmunity -= 1/60;
+      if (turboEndImmunity < 0) turboEndImmunity = 0;
     }
 
     // Jump physics
@@ -1457,6 +1478,8 @@ function animate() {
           }, 430);
           o.userData.active=false; o.visible=false;
           coinScore += 25;
+        } else if (turboEndImmunity > 0) {
+          o.userData.active=false; o.visible=false;
         } else if (shielded) {
           // Shield absorbs hit
           burst(o.position.clone(), 0x00ffaa, 16);
@@ -1623,6 +1646,3 @@ animate();
 </script>
 </body>
 </html>
-
-
-

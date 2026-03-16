@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="ca">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Novarena | Activity</title>
+  <meta name="description" content="Activitat recent de la plataforma Novarena amb scores reals compartides.">
+  <link rel="stylesheet" href="assets/css/site.css">
+  <script src="assets/js/i18n.js" defer></script>
+  <script src="assets/js/site.js" defer></script>
+  <script src="assets/js/novarena-sdk.js" defer></script>
+  <script src="assets/js/activity-page.js" defer></script>
+</head>
+<body>
+  <header class="site-header">
+    <a class="brand" href="index.html" data-i18n="aria.backHome" data-i18n-attr="aria-label">
+      <img class="brand-mark" src="assets/icons/novarena-badge.svg" alt="">
+      <span class="brand-copy">
+        <strong>Novarena</strong>
+        <small>Activity</small>
+      </span>
+    </a>
+    <div class="site-header-actions">
+      <nav class="site-nav" data-i18n="aria.nav" data-i18n-attr="aria-label">
+        <a href="index.html" data-i18n="nav.home">Home</a>
+        <a href="games.html" data-i18n="nav.games">Jocs</a>
+        <a href="leaderboard.html" data-i18n="nav.leaderboard">Leaderboard</a>
+        <a href="profile.html" data-i18n="nav.profile">Profile</a>
+        <a href="community.html" data-i18n="nav.community">Community</a>
+      </nav>
+      <div class="lang-switcher" data-language-switcher>
+        <button class="lang-option" type="button" data-lang="ca">CA</button>
+        <button class="lang-option" type="button" data-lang="es">ES</button>
+        <button class="lang-option" type="button" data-lang="en">EN</button>
+        <button class="lang-option" type="button" data-lang="it">IT</button>
+      </div>
+    </div>
+  </header>
+
+  <main class="shell page-main">
+    <section class="page-hero">
+      <p class="eyebrow">Activity</p>
+      <h1><span data-activity-title>Activitat recent</span></h1>
+      <p data-activity-subtitle>Segueix les darreres puntuacions de la plataforma a mesura que arriben.</p>
+    </section>
+
+    <section class="section-block">
+      <div class="section-head">
+        <div>
+          <p class="eyebrow">Live feed</p>
+          <h2 data-activity-section-title>Scores recents</h2>
+        </div>
+        <span class="game-category"><span data-activity-count>0</span> entries</span>
+      </div>
+      <div class="panel" data-activity-feed>
+        <p class="loading-state">Carregant activitat...</p>
+      </div>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <p>Novarena <span data-current-year></span></p>
+    <p>Shared platform activity powered by the central Novarena SDK.</p>
+  </footer>
+</body>
+</html>

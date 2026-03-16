@@ -271,7 +271,7 @@ canvas#c {
 </head>
 <body>
 
-<a class="home-link" href="../../index.html" aria-label="Tornar a la pagina principal">&larr; Inici</a>
+<a class="home-link" href="../../index.html" onclick="if (window.history.length > 1) { window.history.back(); return false; }" aria-label="Tornar enrere">&larr; Enrere</a>
 
 <!-- HUD -->
 <div id="hud">

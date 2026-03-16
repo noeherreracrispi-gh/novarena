@@ -50,6 +50,36 @@ var HOME_CHALLENGE_COPY = {
     live: 'Attiva oggi'
   }
 };
+var HOME_ACTIVITY_COPY = {
+  ca: {
+    title: 'Activitat recent',
+    empty: 'Encara no hi ha activitat recent.',
+    cta: 'Veure tota l\'activitat',
+    points: 'punts',
+    ago: 'fa'
+  },
+  es: {
+    title: 'Actividad reciente',
+    empty: 'Todavia no hay actividad reciente.',
+    cta: 'Ver toda la actividad',
+    points: 'puntos',
+    ago: 'hace'
+  },
+  en: {
+    title: 'Recent activity',
+    empty: 'There is no recent activity yet.',
+    cta: 'View all activity',
+    points: 'points',
+    ago: ''
+  },
+  it: {
+    title: 'Attivita recente',
+    empty: 'Non c\'e ancora attivita recente.',
+    cta: 'Vedi tutta l\'attivita',
+    points: 'punti',
+    ago: ''
+  }
+};
 
 async function fetchJson(path) {
   var response = await fetch(path, { cache: 'no-store' });
@@ -108,6 +138,65 @@ function findGameById(games, gameId) {
 function getHomeChallengeCopy() {
   var lang = typeof getCurrentLanguage === 'function' ? getCurrentLanguage() : 'en';
   return HOME_CHALLENGE_COPY[lang] || HOME_CHALLENGE_COPY.en;
+}
+
+function getHomeActivityCopy() {
+  var lang = typeof getCurrentLanguage === 'function' ? getCurrentLanguage() : 'en';
+  return HOME_ACTIVITY_COPY[lang] || HOME_ACTIVITY_COPY.en;
+}
+
+function relativeTime(value) {
+  var lang = typeof getCurrentLanguage === 'function' ? getCurrentLanguage() : 'en';
+  var locales = { ca: 'ca-ES', es: 'es-ES', en: 'en-US', it: 'it-IT' };
+  var date = value ? new Date(value) : null;
+  var seconds;
+  var minutes;
+  var hours;
+  var days;
+  var formatter;
+
+  if (!date || Number.isNaN(date.getTime())) {
+    return '-';
+  }
+
+  seconds = Math.round((date.getTime() - Date.now()) / 1000);
+  minutes = Math.round(seconds / 60);
+  hours = Math.round(minutes / 60);
+  days = Math.round(hours / 24);
+  formatter = typeof Intl !== 'undefined' && typeof Intl.RelativeTimeFormat === 'function'
+    ? new Intl.RelativeTimeFormat(locales[lang] || 'en-US', { numeric: 'auto' })
+    : null;
+
+  if (!formatter) {
+    return date.toLocaleString(locales[lang] || 'en-US');
+  }
+
+  if (Math.abs(minutes) < 60) {
+    return formatter.format(minutes, 'minute');
+  }
+
+  if (Math.abs(hours) < 24) {
+    return formatter.format(hours, 'hour');
+  }
+
+  return formatter.format(days, 'day');
+}
+
+function activityItemTemplate(item, games) {
+  var game = findGameById(games, item.game) || {
+    id: item.game,
+    title: item.game,
+    path: 'games/' + item.game + '/index.html'
+  };
+  var copy = getHomeActivityCopy();
+
+  return [
+    '<div class="activity-item">',
+    '  <strong>' + escapeHtml(item.playerName || t('common.player', 'Player')) + ' - ' + escapeHtml(game.title) + ' - ' + escapeHtml(formatScore(item.score)) + ' ' + escapeHtml(copy.points) + '</strong>',
+    '  <p><a href="' + escapeHtml(game.path) + '">' + escapeHtml(t('common.play', 'Play')) + ' ' + escapeHtml(game.title) + '</a></p>',
+    '  <div class="activity-meta">' + escapeHtml(relativeTime(item.createdAt)) + '</div>',
+    '</div>'
+  ].join('');
 }
 
 function gameCardTemplate(game) {
@@ -375,6 +464,45 @@ async function renderCurrentChallenge() {
     '  </div>',
     '</article>'
   ].join('');
+}
+
+async function renderHomeActivity() {
+  var shell = document.querySelector('[data-home-activity]');
+  var titleNode = document.querySelector('.activity-card h2');
+  var button = document.querySelector('.activity-card .button');
+  var games;
+  var items;
+  var copy = getHomeActivityCopy();
+
+  if (!shell) {
+    return;
+  }
+
+  if (titleNode) {
+    titleNode.textContent = copy.title;
+  }
+
+  if (button) {
+    button.textContent = copy.cta;
+  }
+
+  games = await loadGames();
+
+  if (!window.Novarena || typeof window.Novarena.getActivityAsync !== 'function') {
+    shell.innerHTML = '<p class="empty-state">' + escapeHtml(copy.empty) + '</p>';
+    return;
+  }
+
+  items = await window.Novarena.getActivityAsync({ limit: 5 });
+
+  if (!items.length) {
+    shell.innerHTML = '<p class="empty-state">' + escapeHtml(copy.empty) + '</p>';
+    return;
+  }
+
+  shell.innerHTML = items.map(function (item) {
+    return activityItemTemplate(item, games);
+  }).join('');
 }
 
 document.addEventListener('DOMContentLoaded', function () {

@@ -81,6 +81,19 @@ var PROFILE_RECENT_ACTIVITY_QUERY = [
   'ORDER BY created_at DESC, id DESC',
   'LIMIT ?2'
 ].join(' ');
+var ACTIVITY_QUERY = [
+  'SELECT player_id, player_name, game, score, created_at',
+  'FROM scores',
+  'ORDER BY created_at DESC, id DESC',
+  'LIMIT ?1'
+].join(' ');
+var ACTIVITY_BY_GAME_QUERY = [
+  'SELECT player_id, player_name, game, score, created_at',
+  'FROM scores',
+  'WHERE game = ?1',
+  'ORDER BY created_at DESC, id DESC',
+  'LIMIT ?2'
+].join(' ');
 var PROFILE_ACTIVE_CHALLENGE_RANK_QUERY = [
   'WITH ranked_scores AS (',
   '  SELECT id, game, player_id, player_name, score, score_type, created_at,',
@@ -259,6 +272,18 @@ export function parseProfileRequest(requestUrl) {
   };
 }
 
+export function parseActivityRequest(requestUrl) {
+  var game = requestUrl.searchParams.get('game');
+  var limit = Number(requestUrl.searchParams.get('limit'));
+
+  return {
+    game: game ? canonicalGameId(game) : null,
+    limit: Number.isFinite(limit) && limit > 0
+      ? Math.min(Math.floor(limit), MAX_LIMIT)
+      : DEFAULT_LIMIT
+  };
+}
+
 function requireDatabase(env) {
   if (!env || !env.NOVARENA_DB) {
     throw new HttpError(500, 'NOVARENA_DB binding is not configured');
@@ -314,6 +339,21 @@ function mapProfileChallengeEntry(row) {
     rank: Number(row.challenge_rank),
     totalPlayers: Number(row.total_players || 0),
     entry: mapScoreRow(row)
+  };
+}
+
+function mapActivityRow(row) {
+  if (!row) {
+    return null;
+  }
+
+  return {
+    type: 'score',
+    playerId: row.player_id,
+    playerName: row.player_name,
+    game: canonicalGameId(row.game),
+    score: Number(row.score),
+    createdAt: row.created_at
   };
 }
 
@@ -381,6 +421,29 @@ export async function getCurrentChallenge(env) {
   return mapChallengeRow(rows[0] || null);
 }
 
+export async function getActivity(env, options) {
+  var normalized = options || {};
+  var database = requireDatabase(env);
+  var result;
+  var rows;
+
+  if (normalized.game) {
+    result = await database.prepare(ACTIVITY_BY_GAME_QUERY).bind(
+      normalized.game,
+      normalized.limit || DEFAULT_LIMIT
+    ).all();
+  } else {
+    result = await database.prepare(ACTIVITY_QUERY).bind(
+      normalized.limit || DEFAULT_LIMIT
+    ).all();
+  }
+
+  rows = result && Array.isArray(result.results) ? result.results : [];
+  return rows.map(mapActivityRow).filter(function (item) {
+    return Boolean(item);
+  });
+}
+
 export async function getChallengeById(env, challengeId) {
   if (!challengeId) {
     return null;
@@ -446,9 +509,10 @@ export async function getCurrentProfile(env, options) {
   var bestGlobalEntry = mapScoreRow(bestGlobalRows[0] || null);
   var bestPerGame = bestPerGameRows.map(mapScoreRow);
   var recentEntries = recentRows.map(mapScoreRow);
-  var resolvedPlayerName = recentEntries[0] && recentEntries[0].playerName
-    ? recentEntries[0].playerName
-    : (bestGlobalEntry && bestGlobalEntry.playerName ? bestGlobalEntry.playerName : fallbackPlayerName);
+  var resolvedPlayerName = fallbackPlayerName
+    || (recentEntries[0] && recentEntries[0].playerName
+      ? recentEntries[0].playerName
+      : (bestGlobalEntry && bestGlobalEntry.playerName ? bestGlobalEntry.playerName : 'Player'));
   var activeChallenge = {
     challenge: challenge,
     rank: null,

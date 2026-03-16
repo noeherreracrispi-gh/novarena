@@ -14,6 +14,9 @@ ON scores (score DESC, created_at DESC);
 CREATE INDEX IF NOT EXISTS idx_scores_game_leaderboard
 ON scores (game, score DESC, created_at DESC);
 
+CREATE INDEX IF NOT EXISTS idx_scores_created_at
+ON scores (created_at DESC);
+
 CREATE TABLE IF NOT EXISTS daily_challenges (
   id TEXT PRIMARY KEY,
   date TEXT NOT NULL,

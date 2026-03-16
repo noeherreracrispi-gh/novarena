@@ -32,7 +32,12 @@
       challengeParticipants: 'Participants',
       play: 'Jugar',
       viewLeaderboard: 'Veure leaderboard',
-      activityNote: 'Les entrades mostren l\'historial recent del teu navegador actual.'
+      activityNote: 'Les entrades mostren l\'historial recent del teu navegador actual.',
+      nameLabel: 'Nom de jugador',
+      namePlaceholder: 'Escriu el teu nom',
+      saveName: 'Guardar',
+      saveSuccess: 'Nom actualitzat.',
+      fallbackPlayer: 'Jugador'
     },
     es: {
       eyebrow: 'Jugador actual',
@@ -58,7 +63,12 @@
       challengeParticipants: 'Participantes',
       play: 'Jugar',
       viewLeaderboard: 'Ver leaderboard',
-      activityNote: 'Las entradas muestran el historial reciente de tu navegador actual.'
+      activityNote: 'Las entradas muestran el historial reciente de tu navegador actual.',
+      nameLabel: 'Nombre de jugador',
+      namePlaceholder: 'Escribe tu nombre',
+      saveName: 'Guardar',
+      saveSuccess: 'Nombre actualizado.',
+      fallbackPlayer: 'Jugador'
     },
     en: {
       eyebrow: 'Current player',
@@ -84,7 +94,12 @@
       challengeParticipants: 'Participants',
       play: 'Play',
       viewLeaderboard: 'View leaderboard',
-      activityNote: 'These entries show the recent history for your current browser player.'
+      activityNote: 'These entries show the recent history for your current browser player.',
+      nameLabel: 'Player name',
+      namePlaceholder: 'Type your name',
+      saveName: 'Save',
+      saveSuccess: 'Name updated.',
+      fallbackPlayer: 'Player'
     },
     it: {
       eyebrow: 'Giocatore attuale',
@@ -110,7 +125,12 @@
       challengeParticipants: 'Partecipanti',
       play: 'Gioca',
       viewLeaderboard: 'Vedi leaderboard',
-      activityNote: 'Queste voci mostrano la cronologia recente del giocatore nel browser attuale.'
+      activityNote: 'Queste voci mostrano la cronologia recente del giocatore nel browser attuale.',
+      nameLabel: 'Nome giocatore',
+      namePlaceholder: 'Scrivi il tuo nome',
+      saveName: 'Salva',
+      saveSuccess: 'Nome aggiornato.',
+      fallbackPlayer: 'Giocatore'
     }
   };
 
@@ -137,6 +157,13 @@
 
   function profileCopy() {
     return PROFILE_COPY[currentLanguage()] || PROFILE_COPY.en;
+  }
+
+  function playerName(profile) {
+    var copy = profileCopy();
+    return profile && profile.player && profile.player.name
+      ? profile.player.name
+      : copy.fallbackPlayer;
   }
 
   function formatDate(value) {
@@ -328,12 +355,20 @@
 
     shell.innerHTML = [
       '<p class="eyebrow">' + escapeHtml(copy.eyebrow) + '</p>',
-      '<h1><span>' + escapeHtml(profile.player.name) + '</span></h1>',
+      '<h1><span>' + escapeHtml(playerName(profile)) + '</span></h1>',
       '<p>' + escapeHtml(copy.subtitle) + '</p>',
       '<div class="hero-actions">',
       '  <span class="game-category">' + escapeHtml(copy.playerId) + ': ' + escapeHtml(profile.player.id) + '</span>',
       '  <span class="game-category">' + escapeHtml(copy.storageMode) + ': ' + escapeHtml(String(mode)) + '</span>',
       '</div>',
+      '<form class="hero-actions" data-profile-name-form>',
+      '  <label style="display:flex;flex-direction:column;gap:8px;min-width:min(320px,100%)">',
+      '    <span class="stat-label">' + escapeHtml(copy.nameLabel) + '</span>',
+      '    <input data-profile-name-input type="text" maxlength="64" value="' + escapeHtml(profile.player && profile.player.name ? profile.player.name : '') + '" placeholder="' + escapeHtml(copy.namePlaceholder) + '" style="padding:14px 16px;border-radius:14px;border:1px solid rgba(104,216,255,.22);background:#08111f;color:#edf5ff;font:inherit;">',
+      '  </label>',
+      '  <button class="button button-primary" type="submit">' + escapeHtml(copy.saveName) + '</button>',
+      '</form>',
+      '<p class="empty-state" data-profile-name-status style="display:none"></p>',
       bestEntry ? [
         '<div class="hero-actions">',
         '  <a class="button button-primary" href="' + escapeHtml(gameHref) + '">' + escapeHtml(gameName) + '</a>',
@@ -341,6 +376,37 @@
         '</div>'
       ].join('') : ''
     ].join('');
+
+    bindNameEditor();
+  }
+
+  function bindNameEditor() {
+    var form = document.querySelector('[data-profile-name-form]');
+    var input = document.querySelector('[data-profile-name-input]');
+    var status = document.querySelector('[data-profile-name-status]');
+    var copy = profileCopy();
+
+    if (!form || !input || !global.Novarena || typeof global.Novarena.setPlayerName !== 'function') {
+      return;
+    }
+
+    form.addEventListener('submit', function (event) {
+      event.preventDefault();
+
+      if (!String(input.value || '').trim()) {
+        input.focus();
+        return;
+      }
+
+      global.Novarena.setPlayerName(input.value);
+
+      if (status) {
+        status.style.display = 'block';
+        status.textContent = copy.saveSuccess;
+      }
+
+      renderProfilePage();
+    });
   }
 
   function renderStats(profile) {

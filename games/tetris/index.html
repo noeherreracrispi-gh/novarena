@@ -339,7 +339,7 @@
 </head>
 <body>
 
-<a class="home-link" href="../../index.html" aria-label="Tornar a la pagina principal">&larr; Inici</a>
+<a class="home-link" href="../../index.html" onclick="if (window.history.length > 1) { window.history.back(); return false; }" aria-label="Tornar enrere">&larr; Enrere</a>
 
 <canvas id="stars"></canvas>
 <canvas id="plants"></canvas>
@@ -808,8 +808,9 @@ function doLines(){
   const cc = theme.comboColors;
   showCombo(labels[cleared.length], cc[cleared.length]);
   setTimeout(()=>{
-    cleared.sort((a,b)=>b-a);
-    for(const r of cleared){board.splice(r,1);board.unshift(Array(COLS).fill(0));}
+    const clearedSet = new Set(cleared);
+    board = board.filter((_, rowIndex) => !clearedSet.has(rowIndex));
+    while(board.length < ROWS) board.unshift(Array(COLS).fill(0));
     const pts=[0,100,300,500,800][cleared.length]*level;
     score+=pts; lines+=cleared.length; level=startLevel + Math.floor(lines/10);
     if(isMatrixMode()) scheduleNextGarbage(Math.max(1600, matrixGarbageDelay() + cleared.length * 420));
@@ -1217,6 +1218,4 @@ document.getElementById('quit-btn').addEventListener('click', ()=>{
 </script>
 </body>
 </html>
-
-
 
