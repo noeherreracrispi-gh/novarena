@@ -2,6 +2,7 @@
   'use strict';
 
   var GAME_ID = 'snake';
+  var submitted = false;
 
   function getCurrentPlayer() {
     if (!global.Novarena || typeof global.Novarena.getPlayer !== 'function') {
@@ -50,6 +51,10 @@
     }
   }
 
+  function resetRound() {
+    submitted = false;
+  }
+
   global.NovarenaSnakeBridge = {
     init: function () {
       loadGameContext().then(function (context) {
@@ -60,8 +65,10 @@
       syncHiScoreFromPlatform();
     },
 
+    resetRound: resetRound,
+
     submitScore: function () {
-      if (!global.Novarena || typeof global.Novarena.submitScore !== 'function') {
+      if (submitted || !global.Novarena || typeof global.Novarena.submitScore !== 'function') {
         return null;
       }
 
@@ -69,6 +76,7 @@
         return null;
       }
 
+      submitted = true;
       return global.Novarena.submitScore({
         game: GAME_ID,
         score: score,

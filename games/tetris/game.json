@@ -1,1 +1,9 @@
 ﻿
+{
+  "id": "tetris",
+  "name": "Tetris",
+  "title": "Tetris",
+  "version": "1.0.0",
+  "scoreType": "points",
+  "author": "Novarena"
+}

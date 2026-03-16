@@ -1,1 +1,11 @@
 ﻿
+{
+  "id": "runner3d",
+  "name": "Neon Runner 3D",
+  "title": "Neon Runner 3D",
+  "version": "1.0.0",
+  "scoreType": "points",
+  "author": "Novarena",
+  "slug": "runner-3d",
+  "aliases": ["runner-3d"]
+}

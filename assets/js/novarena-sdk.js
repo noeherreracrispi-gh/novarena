@@ -5,6 +5,12 @@
   var LANGUAGE_KEY = 'novarena_language';
   var PLAYER_KEY = 'novarena_guest_profile_v1';
   var SCORES_KEY = 'novarena_scores_v1';
+  var GAME_ID_ALIASES = {
+    'runner-3d': 'runner3d'
+  };
+  var GAME_CONTEXT_PATH_ALIASES = {
+    runner3d: ['runner-3d']
+  };
   var contextCache = {};
   var api = null;
 
@@ -15,6 +21,24 @@
 
   function cloneObject(value) {
     return JSON.parse(JSON.stringify(value));
+  }
+
+  function canonicalGameId(gameId) {
+    if (!gameId) {
+      return '';
+    }
+
+    var value = String(gameId);
+    return GAME_ID_ALIASES[value] || value;
+  }
+
+  function getGameContextCandidates(gameId) {
+    var canonicalId = canonicalGameId(gameId);
+    var aliases = GAME_CONTEXT_PATH_ALIASES[canonicalId] || [];
+
+    return [canonicalId].concat(aliases.filter(function (alias) {
+      return alias !== canonicalId;
+    }));
   }
 
   function getSdkRoot() {
@@ -100,41 +124,50 @@
   }
 
   async function getGameContext(gameId) {
-    if (!gameId) {
+    var canonicalId = canonicalGameId(gameId);
+
+    if (!canonicalId) {
       return null;
     }
 
-    if (contextCache[gameId]) {
-      return contextCache[gameId];
+    if (contextCache[canonicalId]) {
+      return contextCache[canonicalId];
     }
 
-    contextCache[gameId] = (async function () {
-      try {
-        return await readJsonFile('games/' + gameId + '/game.json');
-      } catch (gameError) {
-        try {
-          var catalog = await readJsonFile('data/games.json');
-          if (Array.isArray(catalog)) {
-            var match = catalog.find(function (entry) {
-              return entry && entry.id === gameId;
-            });
-            if (match) {
-              return match;
-            }
-          }
-        } catch (catalogError) {
-          // Ignore and fall back below.
-        }
+    contextCache[canonicalId] = (async function () {
+      var candidates = getGameContextCandidates(canonicalId);
+      var i;
 
-        return {
-          id: gameId,
-          title: gameId,
-          path: 'games/' + gameId + '/index.html'
-        };
+      for (i = 0; i < candidates.length; i += 1) {
+        try {
+          return await readJsonFile('games/' + candidates[i] + '/game.json');
+        } catch (gameError) {
+          // Try the next candidate path.
+        }
       }
+
+      try {
+        var catalog = await readJsonFile('data/games.json');
+        if (Array.isArray(catalog)) {
+          var match = catalog.find(function (entry) {
+            return entry && canonicalGameId(entry.id) === canonicalId;
+          });
+          if (match) {
+            return match;
+          }
+        }
+      } catch (catalogError) {
+        // Ignore and fall back below.
+      }
+
+      return {
+        id: canonicalId,
+        title: canonicalId,
+        path: 'games/' + candidates[0] + '/index.html'
+      };
     })();
 
-    return contextCache[gameId];
+    return contextCache[canonicalId];
   }
 
   function normalizeScorePayload(payload) {
@@ -150,7 +183,7 @@
     }
 
     return {
-      game: String(payload.game),
+      game: canonicalGameId(payload.game),
       playerId: String(payload.playerId || player.id),
       playerName: String(payload.playerName || player.name),
       score: score,
@@ -179,7 +212,7 @@
 
     var limit = Number(normalized.limit);
     return {
-      game: normalized.game || null,
+      game: normalized.game ? canonicalGameId(normalized.game) : null,
       limit: Number.isFinite(limit) && limit > 0 ? Math.floor(limit) : 10,
       order: normalized.order === 'asc' ? 'asc' : 'desc'
     };
@@ -200,11 +233,13 @@
   function buildLeaderboard(scores, options) {
     var normalized = normalizeLeaderboardOptions(options);
     var filtered = scores.filter(function (entry) {
-      return !normalized.game || entry.game === normalized.game;
+      return !normalized.game || canonicalGameId(entry.game) === normalized.game;
     });
 
     return sortScores(filtered, normalized.order).slice(0, normalized.limit).map(function (entry) {
-      return cloneObject(entry);
+      var cloned = cloneObject(entry);
+      cloned.game = canonicalGameId(cloned.game);
+      return cloned;
     });
   }
 
@@ -271,7 +306,9 @@
 
   function getScoresLocal() {
     return readScoresLocal().map(function (entry) {
-      return cloneObject(entry);
+      var cloned = cloneObject(entry);
+      cloned.game = canonicalGameId(cloned.game);
+      return cloned;
     });
   }
 

@@ -39,16 +39,22 @@
     });
   }
 
+  function normalizeGameId(gameId) {
+    return gameId === 'runner-3d' ? 'runner3d' : gameId;
+  }
+
   function formatGameLabel(gameId) {
-    if (!gameId) {
+    var normalizedGameId = normalizeGameId(gameId);
+
+    if (!normalizedGameId) {
       return '-';
     }
 
-    if (gameId === 'runner3d') {
+    if (normalizedGameId === 'runner3d') {
       return 'Runner 3D';
     }
 
-    return String(gameId)
+    return String(normalizedGameId)
       .replace(/-/g, ' ')
       .replace(/\b\w/g, function (match) {
         return match.toUpperCase();
@@ -112,7 +118,7 @@
 
   function gameParam() {
     var params = new URLSearchParams(global.location.search);
-    return params.get('game');
+    return normalizeGameId(params.get('game'));
   }
 
   function renderLeaderboard() {

@@ -523,6 +523,9 @@ function initSnake() {
 }
 
 function startGame() {
+  if (window.NovarenaSnakeBridge) {
+    window.NovarenaSnakeBridge.resetRound();
+  }
   score    = 0;
   level    = 1;
   stepMs   = BASE_MS;

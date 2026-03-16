@@ -21,7 +21,9 @@
     "description": "Corre per una pista neon, esquiva obstacles i intenta allargar la partida al maxim.",
     "path": "games/runner-3d/index.html",
     "thumbnail": "assets/img/game-runner.svg",
-    "category": "Runner"
+    "category": "Runner",
+    "scoreType": "points",
+    "aliases": ["runner-3d"]
   },
   {
     "id": "break-block",
