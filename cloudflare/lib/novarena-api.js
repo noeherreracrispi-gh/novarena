@@ -6,6 +6,10 @@ var DEFAULT_LIMIT = 10;
 var MAX_LIMIT = 100;
 var DEFAULT_PROFILE_RECENT_LIMIT = 6;
 var MAX_PROFILE_RECENT_LIMIT = 20;
+var PERIOD_ALL_TIME = 'all_time';
+var PERIOD_TODAY = 'today';
+var PERIOD_THIS_WEEK = 'this_week';
+var PERIOD_LATEST = 'latest';
 var CURRENT_CHALLENGE_QUERY = [
   'SELECT id, date, game, title, description, metric_type, target_value, is_active, created_at',
   'FROM daily_challenges',
@@ -233,12 +237,14 @@ export function normalizeScorePayload(payload) {
 export function parseLeaderboardRequest(requestUrl) {
   var game = requestUrl.searchParams.get('game');
   var limit = Number(requestUrl.searchParams.get('limit'));
+  var period = normalizePeriod(requestUrl.searchParams.get('period'), PERIOD_ALL_TIME);
 
   return {
     game: game ? canonicalGameId(game) : null,
     limit: Number.isFinite(limit) && limit > 0
       ? Math.min(Math.floor(limit), MAX_LIMIT)
-      : DEFAULT_LIMIT
+      : DEFAULT_LIMIT,
+    period: period
   };
 }
 
@@ -275,12 +281,134 @@ export function parseProfileRequest(requestUrl) {
 export function parseActivityRequest(requestUrl) {
   var game = requestUrl.searchParams.get('game');
   var limit = Number(requestUrl.searchParams.get('limit'));
+  var period = normalizePeriod(requestUrl.searchParams.get('period'), PERIOD_LATEST);
 
   return {
     game: game ? canonicalGameId(game) : null,
     limit: Number.isFinite(limit) && limit > 0
       ? Math.min(Math.floor(limit), MAX_LIMIT)
-      : DEFAULT_LIMIT
+      : DEFAULT_LIMIT,
+    period: period
+  };
+}
+
+function normalizePeriod(period, fallbackPeriod) {
+  var value = String(period || '').trim().toLowerCase();
+
+  if (value === PERIOD_TODAY || value === PERIOD_THIS_WEEK || value === PERIOD_LATEST || value === PERIOD_ALL_TIME) {
+    return value;
+  }
+
+  return fallbackPeriod || PERIOD_ALL_TIME;
+}
+
+function startOfUtcDay(date) {
+  return new Date(Date.UTC(
+    date.getUTCFullYear(),
+    date.getUTCMonth(),
+    date.getUTCDate(),
+    0, 0, 0, 0
+  ));
+}
+
+function startOfUtcWeek(date) {
+  var day = date.getUTCDay();
+  var diff = day === 0 ? -6 : 1 - day;
+  var start = startOfUtcDay(date);
+  start.setUTCDate(start.getUTCDate() + diff);
+  return start;
+}
+
+function getPeriodStart(period) {
+  var now = new Date();
+
+  if (period === PERIOD_TODAY) {
+    return startOfUtcDay(now).toISOString();
+  }
+
+  if (period === PERIOD_THIS_WEEK) {
+    return startOfUtcWeek(now).toISOString();
+  }
+
+  return null;
+}
+
+function buildLeaderboardQuery(game, periodStart) {
+  var innerWhere = [];
+  var params = [];
+  var paramIndex = 1;
+  var query = [
+    'SELECT id, game, player_id, player_name, score, score_type, created_at',
+    'FROM (',
+    '  SELECT id, game, player_id, player_name, score, score_type, created_at,',
+    '         ROW_NUMBER() OVER (PARTITION BY player_id ORDER BY score DESC, created_at DESC) AS rn',
+    '  FROM scores'
+  ];
+
+  if (game) {
+    innerWhere.push('game = ?' + paramIndex);
+    params.push(game);
+    paramIndex += 1;
+  }
+
+  if (periodStart) {
+    innerWhere.push('created_at >= ?' + paramIndex);
+    params.push(periodStart);
+    paramIndex += 1;
+  }
+
+  if (innerWhere.length) {
+    query.push('  WHERE ' + innerWhere.join(' AND '));
+  }
+
+  query.push(
+    ') ranked_scores',
+    'WHERE rn = 1',
+    'ORDER BY score DESC, created_at DESC',
+    'LIMIT ?' + paramIndex
+  );
+  params.push(DEFAULT_LIMIT);
+
+  return {
+    sql: query.join(' '),
+    params: params
+  };
+}
+
+function buildActivityQuery(game, periodStart) {
+  var whereClauses = [];
+  var params = [];
+  var paramIndex = 1;
+  var query = [
+    'SELECT player_id, player_name, game, score, created_at',
+    'FROM scores'
+  ];
+
+  if (game) {
+    whereClauses.push('game = ?' + paramIndex);
+    params.push(game);
+    paramIndex += 1;
+  }
+
+  if (periodStart) {
+    whereClauses.push('created_at >= ?' + paramIndex);
+    params.push(periodStart);
+    paramIndex += 1;
+  }
+
+  if (whereClauses.length) {
+    query.push('WHERE ' + whereClauses.join(' AND '));
+  }
+
+  query.push(
+    'ORDER BY created_at DESC, id DESC',
+    'LIMIT ?' + paramIndex
+  );
+  params.push(DEFAULT_LIMIT);
+
+  return {
+    sql: query.join(' '),
+    params: params
   };
 }
 
@@ -413,17 +541,14 @@ export async function insertScore(env, entry) {
 export async function getLeaderboard(env, options) {
   var database = requireDatabase(env);
   var normalized = options || {};
-  var statement;
-
-  if (normalized.game) {
-    // Match idx_scores_game_leaderboard: (game, score DESC, created_at DESC).
-    statement = database.prepare(GAME_LEADERBOARD_QUERY).bind(
-      normalized.game,
-      normalized.limit || DEFAULT_LIMIT
-    );
-  } else {
-    statement = database.prepare(GLOBAL_LEADERBOARD_QUERY).bind(normalized.limit || DEFAULT_LIMIT);
-  }
+  var periodStart = getPeriodStart(normalized.period);
+  var builtQuery = buildLeaderboardQuery(normalized.game, periodStart);
+  var params = builtQuery.params.slice(0, builtQuery.params.length - 1).concat([normalized.limit || DEFAULT_LIMIT]);
+  var prepared = database.prepare(builtQuery.sql);
+  var statement = prepared.bind.apply(
+    prepared,
+    params
+  );
 
   var result = await statement.all();
   var rows = result && Array.isArray(result.results) ? result.results : [];
@@ -442,19 +567,17 @@ export async function getCurrentChallenge(env) {
 export async function getActivity(env, options) {
   var normalized = options || {};
   var database = requireDatabase(env);
+  var periodStart = getPeriodStart(normalized.period === PERIOD_LATEST ? PERIOD_ALL_TIME : normalized.period);
+  var builtQuery = buildActivityQuery(normalized.game, periodStart);
+  var params = builtQuery.params.slice(0, builtQuery.params.length - 1).concat([normalized.limit || DEFAULT_LIMIT]);
+  var prepared = database.prepare(builtQuery.sql);
   var result;
   var rows;
 
-  if (normalized.game) {
-    result = await database.prepare(ACTIVITY_BY_GAME_QUERY).bind(
-      normalized.game,
-      normalized.limit || DEFAULT_LIMIT
-    ).all();
-  } else {
-    result = await database.prepare(ACTIVITY_QUERY).bind(
-      normalized.limit || DEFAULT_LIMIT
-    ).all();
-  }
+  result = await prepared.bind.apply(
+    prepared,
+    params
+  ).all();
 
   rows = result && Array.isArray(result.results) ? result.results : [];
   return rows.map(mapActivityRow).filter(function (item) {

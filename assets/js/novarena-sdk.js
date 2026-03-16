@@ -22,6 +22,10 @@
   var MAX_REMOTE_LIMIT = 100;
   var DEFAULT_PROFILE_RECENT_LIMIT = 6;
   var MAX_PROFILE_RECENT_LIMIT = 20;
+  var PERIOD_ALL_TIME = 'all_time';
+  var PERIOD_TODAY = 'today';
+  var PERIOD_THIS_WEEK = 'this_week';
+  var PERIOD_LATEST = 'latest';
   var DEFAULT_PLAYER_NAME_FALLBACK = 'Player';
   var NAME_PROMPT_COPY = {
     ca: {
@@ -58,6 +62,16 @@
   function resolveLanguage(lang) {
     var value = String(lang || '').toLowerCase().split('-')[0];
     return ['ca', 'es', 'en', 'it'].indexOf(value) >= 0 ? value : 'en';
+  }
+
+  function normalizePeriod(period, fallbackPeriod) {
+    var value = String(period || '').trim().toLowerCase();
+
+    if (value === PERIOD_ALL_TIME || value === PERIOD_TODAY || value === PERIOD_THIS_WEEK || value === PERIOD_LATEST) {
+      return value;
+    }
+
+    return fallbackPeriod || PERIOD_ALL_TIME;
   }
 
   function cloneObject(value) {
@@ -540,7 +554,8 @@
       limit: Number.isFinite(limit) && limit > 0
         ? Math.min(Math.floor(limit), MAX_REMOTE_LIMIT)
         : DEFAULT_REMOTE_LIMIT,
-      order: normalized.order === 'asc' ? 'asc' : 'desc'
+      order: normalized.order === 'asc' ? 'asc' : 'desc',
+      period: normalizePeriod(normalized.period, PERIOD_ALL_TIME)
     };
   }
 
@@ -549,7 +564,8 @@
     return [
       normalized.game || 'global',
       normalized.limit,
-      normalized.order
+      normalized.order,
+      normalized.period
     ].join('|');
   }
 
@@ -580,7 +596,8 @@
       game: normalized.game ? canonicalGameId(normalized.game) : null,
       limit: Number.isFinite(limit) && limit > 0
         ? Math.min(Math.floor(limit), MAX_REMOTE_LIMIT)
-        : DEFAULT_REMOTE_LIMIT
+        : DEFAULT_REMOTE_LIMIT,
+      period: normalizePeriod(normalized.period, PERIOD_LATEST)
     };
   }
 
@@ -599,7 +616,8 @@
 
     return [
       normalized.game || 'all',
-      normalized.limit
+      normalized.limit,
+      normalized.period
     ].join('|');
   }
 
@@ -729,7 +747,7 @@
 
   function buildLeaderboard(scores, options) {
     var normalized = normalizeLeaderboardOptions(options);
-    var filtered = normalizeEntryList(scores).filter(function (entry) {
+    var filtered = filterEntriesByPeriod(scores, normalized.period).filter(function (entry) {
       return !normalized.game || canonicalGameId(entry.game) === normalized.game;
     });
 
@@ -796,6 +814,49 @@
     });
   }
 
+  function startOfUtcDay(date) {
+    return new Date(Date.UTC(
+      date.getUTCFullYear(),
+      date.getUTCMonth(),
+      date.getUTCDate(),
+      0, 0, 0, 0
+    ));
+  }
+
+  function startOfUtcWeek(date) {
+    var start = startOfUtcDay(date);
+    var day = start.getUTCDay();
+    var diff = day === 0 ? -6 : 1 - day;
+    start.setUTCDate(start.getUTCDate() + diff);
+    return start;
+  }
+
+  function periodStart(period) {
+    var now = new Date();
+
+    if (period === PERIOD_TODAY) {
+      return startOfUtcDay(now).toISOString();
+    }
+
+    if (period === PERIOD_THIS_WEEK) {
+      return startOfUtcWeek(now).toISOString();
+    }
+
+    return null;
+  }
+
+  function filterEntriesByPeriod(entries, period) {
+    var start = periodStart(period);
+
+    if (!start || period === PERIOD_ALL_TIME || period === PERIOD_LATEST) {
+      return normalizeEntryList(entries);
+    }
+
+    return normalizeEntryList(entries).filter(function (entry) {
+      return String(entry.createdAt || '') >= start;
+    });
+  }
+
   function sortRecentScores(scores) {
     return normalizeEntryList(scores).slice().sort(function (left, right) {
       var leftDate = String(left.createdAt || '');
@@ -812,7 +873,7 @@
   function buildActivity(scores, options) {
     var normalized = normalizeActivityOptions(options);
 
-    return normalizeEntryList(scores).filter(function (entry) {
+    return filterEntriesByPeriod(scores, normalized.period).filter(function (entry) {
       return !normalized.game || canonicalGameId(entry.game) === normalized.game;
     }).sort(function (left, right) {
       var leftDate = String(left.createdAt || '');
@@ -1202,7 +1263,8 @@
       getLeaderboardAsync: function (options) {
         var normalized = normalizeLeaderboardOptions(options);
         var query = {
-          limit: normalized.limit
+          limit: normalized.limit,
+          period: normalized.period
         };
 
         if (normalized.game) {
@@ -1241,7 +1303,8 @@
       getActivityAsync: function (options) {
         var normalized = normalizeActivityOptions(options);
         var query = {
-          limit: normalized.limit
+          limit: normalized.limit,
+          period: normalized.period
         };
 
         if (normalized.game) {

@@ -7,6 +7,9 @@
       subtitle: 'Segueix les darreres puntuacions de la plataforma a mesura que arriben.',
       section: 'Scores recents',
       empty: 'Encara no hi ha activitat recent.',
+      latest: 'Ultimes',
+      today: 'Avui',
+      thisWeek: 'Aquesta setmana',
       points: 'punts',
       player: 'Jugador',
       game: 'Joc',
@@ -19,6 +22,9 @@
       subtitle: 'Sigue las ultimas puntuaciones de la plataforma a medida que llegan.',
       section: 'Scores recientes',
       empty: 'Todavia no hay actividad reciente.',
+      latest: 'Ultimas',
+      today: 'Hoy',
+      thisWeek: 'Esta semana',
       points: 'puntos',
       player: 'Jugador',
       game: 'Juego',
@@ -31,6 +37,9 @@
       subtitle: 'Follow the latest platform scores as they come in.',
       section: 'Recent scores',
       empty: 'There is no recent activity yet.',
+      latest: 'Latest',
+      today: 'Today',
+      thisWeek: 'This week',
       points: 'points',
       player: 'Player',
       game: 'Game',
@@ -43,6 +52,9 @@
       subtitle: 'Segui gli ultimi punteggi della piattaforma mentre arrivano.',
       section: 'Score recenti',
       empty: 'Non c\'e ancora attivita recente.',
+      latest: 'Ultime',
+      today: 'Oggi',
+      thisWeek: 'Questa settimana',
       points: 'punti',
       player: 'Giocatore',
       game: 'Gioco',
@@ -179,6 +191,37 @@
     return params.get('game');
   }
 
+  function periodParam() {
+    var params = new URLSearchParams(global.location.search);
+    var period = params.get('period');
+    return ['today', 'this_week'].indexOf(period) >= 0 ? period : 'latest';
+  }
+
+  function bindPeriodControls() {
+    var params = new URLSearchParams(global.location.search);
+    var selected = periodParam();
+    var copy = pageCopy();
+
+    document.querySelectorAll('[data-activity-period-controls] [data-period]').forEach(function (node) {
+      var targetPeriod = node.getAttribute('data-period');
+      var nextParams = new URLSearchParams(params.toString());
+
+      node.textContent = targetPeriod === 'today'
+        ? copy.today
+        : (targetPeriod === 'this_week' ? copy.thisWeek : copy.latest);
+
+      if (targetPeriod === 'latest') {
+        nextParams.delete('period');
+      } else {
+        nextParams.set('period', targetPeriod);
+      }
+
+      node.setAttribute('href', 'activity.html' + (nextParams.toString() ? '?' + nextParams.toString() : ''));
+      node.classList.toggle('button-primary', targetPeriod === selected);
+      node.classList.toggle('button-secondary', targetPeriod !== selected);
+    });
+  }
+
   async function renderActivityPage() {
     var shell = document.querySelector('[data-activity-feed]');
     var countNode = document.querySelector('[data-activity-count]');
@@ -188,6 +231,7 @@
     var copy = pageCopy();
     var items;
     var contexts;
+    var period = periodParam();
 
     if (!shell) {
       return;
@@ -205,6 +249,8 @@
       sectionTitleNode.textContent = copy.section;
     }
 
+    bindPeriodControls();
+
     if (!global.Novarena || typeof global.Novarena.getActivityAsync !== 'function') {
       shell.innerHTML = '<p class="empty-state">' + escapeHtml(copy.empty) + '</p>';
       return;
@@ -212,7 +258,8 @@
 
     items = await global.Novarena.getActivityAsync({
       limit: 20,
-      game: gameParam()
+      game: gameParam(),
+      period: period
     });
     contexts = await loadGameContexts(items);
 

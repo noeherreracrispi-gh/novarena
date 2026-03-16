@@ -20,6 +20,7 @@ export async function onRequestGet(context) {
       ok: true,
       game: options.game,
       limit: options.limit,
+      period: options.period,
       items: items
     });
   } catch (error) {

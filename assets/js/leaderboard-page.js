@@ -12,25 +12,45 @@
       title: 'Challenge leaderboard',
       empty: 'No hi ha repte actiu ara mateix.',
       summaryPrefix: 'Repte',
-      datePrefix: 'Data'
+      datePrefix: 'Data',
+      period: {
+        all_time: 'Global',
+        today: 'Avui',
+        this_week: 'Aquesta setmana'
+      }
     },
     es: {
       title: 'Challenge leaderboard',
       empty: 'No hay reto activo ahora mismo.',
       summaryPrefix: 'Reto',
-      datePrefix: 'Fecha'
+      datePrefix: 'Fecha',
+      period: {
+        all_time: 'Global',
+        today: 'Hoy',
+        this_week: 'Esta semana'
+      }
     },
     en: {
       title: 'Challenge leaderboard',
       empty: 'There is no active challenge right now.',
       summaryPrefix: 'Challenge',
-      datePrefix: 'Date'
+      datePrefix: 'Date',
+      period: {
+        all_time: 'Global',
+        today: 'Today',
+        this_week: 'This week'
+      }
     },
     it: {
       title: 'Challenge leaderboard',
       empty: 'Non c\'e una sfida attiva in questo momento.',
       summaryPrefix: 'Sfida',
-      datePrefix: 'Data'
+      datePrefix: 'Data',
+      period: {
+        all_time: 'Globale',
+        today: 'Oggi',
+        this_week: 'Questa settimana'
+      }
     }
   };
 
@@ -78,6 +98,11 @@
 
   function challengeCopy() {
     return CHALLENGE_COPY[currentLanguage()] || CHALLENGE_COPY.en;
+  }
+
+  function periodCopy(period) {
+    var copy = challengeCopy();
+    return copy.period && copy.period[period] ? copy.period[period] : period;
   }
 
   function normalizeGameId(gameId) {
@@ -167,6 +192,34 @@
     return params.get('challenge');
   }
 
+  function periodParam() {
+    var params = new URLSearchParams(global.location.search);
+    var period = params.get('period');
+    return ['today', 'this_week'].indexOf(period) >= 0 ? period : 'all_time';
+  }
+
+  function bindPeriodControls() {
+    var params = new URLSearchParams(global.location.search);
+    var selected = periodParam();
+
+    document.querySelectorAll('[data-leaderboard-period-controls] [data-period]').forEach(function (node) {
+      var targetPeriod = node.getAttribute('data-period');
+      var nextParams = new URLSearchParams(params.toString());
+
+      node.textContent = periodCopy(targetPeriod);
+
+      if (targetPeriod === 'all_time') {
+        nextParams.delete('period');
+      } else {
+        nextParams.set('period', targetPeriod);
+      }
+
+      node.setAttribute('href', 'leaderboard.html' + (nextParams.toString() ? '?' + nextParams.toString() : ''));
+      node.classList.toggle('button-primary', targetPeriod === selected);
+      node.classList.toggle('button-secondary', targetPeriod !== selected);
+    });
+  }
+
   function loadEntries(options) {
     if (!global.Novarena) {
       return Promise.resolve([]);
@@ -244,14 +297,17 @@
     var gameSection = document.querySelector('[data-sdk-leaderboard-game]');
     var selectedGame = gameParam();
     var selectedChallenge = challengeParam();
+    var selectedPeriod = periodParam();
     var challengeResult = await loadChallengeEntries({ challengeId: selectedChallenge, limit: 10 });
-    var globalEntries = await loadEntries({ game: null, limit: 10, order: 'desc' });
+    var globalEntries = await loadEntries({ game: null, limit: 10, order: 'desc', period: selectedPeriod });
+
+    bindPeriodControls();
 
     renderChallengeSection(challengeSection, challengeResult);
 
     renderSection(
       globalSection,
-      t('leaderboard.sections.global', 'Global leaderboard'),
+      periodCopy(selectedPeriod) + ' ' + t('nav.leaderboard', 'Leaderboard'),
       globalEntries
     );
 
@@ -270,8 +326,8 @@
 
     renderSection(
       gameSection,
-      formatGameLabel(selectedGame) + ' ' + t('nav.leaderboard', 'Leaderboard'),
-      await loadEntries({ game: selectedGame, limit: 10, order: 'desc' })
+      formatGameLabel(selectedGame) + ' ' + periodCopy(selectedPeriod) + ' ' + t('nav.leaderboard', 'Leaderboard'),
+      await loadEntries({ game: selectedGame, limit: 10, order: 'desc', period: selectedPeriod })
     );
   }
 
