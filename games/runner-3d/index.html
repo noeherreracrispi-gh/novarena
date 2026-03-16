@@ -145,7 +145,7 @@
   </div>
   <div class="hud-box">
     <div class="hud-lbl">VIDES</div>
-    <div class="hud-val" id="hLives">â¤ï¸â¤ï¸â¤ï¸</div>
+    <div class="hud-val" id="hLives">&#10084;&#65039;&#10084;&#65039;&#10084;&#65039;</div>
   </div>
 </div>
 
@@ -156,7 +156,7 @@
   <div id="powerbar"></div>
 </div>
 
-<div id="turbo-banner">âš¡ TURBO! âš¡</div>
+<div id="turbo-banner">&#9889; TURBO! &#9889;</div>
 <div id="screen-flash"></div>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
@@ -276,7 +276,7 @@ for (let i=0; i<NUM_TILES; i++) {
     }
     geo.setAttribute('position', new THREE.BufferAttribute(pos, 3));
     scene.add(new THREE.Points(geo,
-      new THREE.PointsMaterial({ color:col, size:sz, transparent:true, opacity:op??0.9 })));
+      new THREE.PointsMaterial({ color:col, size:sz, transparent:true, opacity: op || 0.9 })));
   }
   // Cold blue-white background stars (very far, everywhere)
   starLayer(6000, 700,  3, 160, 0xbbccff, 0.13);
@@ -1049,12 +1049,12 @@ function showStart() {
     <div class="subtitle">R U N N E R</div>
     <div class="divider"></div>
     <div class="instructions">
-      <span class="key">â† â†’</span> Canvia de carril &nbsp; <span class="key">ESPAI</span> Salta<br>
-      En mÃ²bil: llisca esquerra/dreta Â· llisca amunt per saltar<br>
-      Esquiva els obstacles &nbsp;Â·&nbsp; Recull les monedes â—†<br>
-      Agafa l'escut verd <span style="color:#0fa">â—ˆ</span> i, si tens sort, un imant molt rar per atraure monedes!
+      <span class="key">&larr; &rarr;</span> Canvia de carril &nbsp; <span class="key">ESPAI</span> Salta<br>
+      En m&ograve;bil: llisca esquerra/dreta &middot; llisca amunt per saltar<br>
+      Esquiva els obstacles &nbsp;&middot;&nbsp; Recull les monedes &#9670;<br>
+      Agafa l'escut verd <span style="color:#0fa">&#9672;</span> i, si tens sort, un imant molt rar per atraure monedes!
     </div>
-    <button class="btn" id="startBtn">â–¶ INICIAR</button>
+    <button class="btn" id="startBtn">&#9654; INICIAR</button>
   `;
   overlay.style.display = 'flex';
   hud.style.display = 'none';
@@ -1066,9 +1066,9 @@ function showGameOver() {
   overlay.innerHTML = `
     <div class="big-title" style="font-size:clamp(38px,9vw,65px)">GAME OVER</div>
     <div class="divider"></div>
-    <div class="score-big">PUNTUACIÃ“: <span>${score}</span></div>
-    <div class="best-line">MILLOR RÃˆCORD: ${best}</div>
-    <button class="btn" id="startBtn">â†º TORNAR A JUGAR</button>
+    <div class="score-big">PUNTUACIÓ: <span>${score}</span></div>
+    <div class="best-line">MILLOR RÈCORD: ${best}</div>
+    <button class="btn" id="startBtn">↺ TORNAR A JUGAR</button>
   `;
   overlay.style.display = 'flex';
   hud.style.display = 'none';
@@ -1107,7 +1107,7 @@ function startGame() {
   turboBanner.classList.remove('show');
   shockPool.forEach(s => { s.userData.active=false; s.visible=false; });
   lives = 3; invincible = false; invTimer = 0;
-  hLives.textContent = 'â¤ï¸â¤ï¸â¤ï¸';
+  hLives.textContent = '\u2764\uFE0F\u2764\uFE0F\u2764\uFE0F';
   nextObs = 80; nextCoin = 50; nextPU = 400; nextMagnet = 1800 + Math.floor(Math.random()*900);
 
   obsPool.forEach(o   => { o.userData.active=false; o.visible=false; });
@@ -1219,7 +1219,7 @@ function animate() {
     const turboNowReady = (powerFill >= 1 && !turboActive);
     if (turboNowReady && !turboWasReady) {
       powerBar.classList.add('ready');
-      turboLbl.textContent = 'âš¡ LLEST!';
+      turboLbl.textContent = '\u26A1 LLEST!';
       turboBanner.classList.remove('show');
       void turboBanner.offsetWidth; // reflow
       turboBanner.classList.add('show');
@@ -1441,7 +1441,7 @@ function animate() {
         } else if (!invincible) {
           burst(player.position.clone().add(new THREE.Vector3(0,1,0)), 0xff3300, 20);
           lives--;
-          hLives.textContent = 'â¤ï¸'.repeat(lives) + 'ðŸ–¤'.repeat(3-lives);
+          hLives.textContent = '\u2764\uFE0F'.repeat(lives) + '\uD83D\uDDA4'.repeat(3-lives);
           if (lives <= 0) {
             if (score>best) { best=score; localStorage.setItem('neon_best',best); }
             console.log('NOVARENA GAME OVER', 'runner3d', score);
