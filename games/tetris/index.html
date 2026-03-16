@@ -1,4 +1,4 @@
-<!doctype html>
+﻿<!doctype html>
 <html lang="ca">
 <head>
   <meta charset="utf-8"/>
@@ -46,7 +46,7 @@
     body.natural #stars { opacity: 0; }
     body.matrix #stars { opacity: 1; }
 
-    /* Plants canvas — behind shell (z-index:1) but above stars */
+    /* Plants canvas â€” behind shell (z-index:1) but above stars */
     #plants { position: fixed; inset: 0; z-index: 0; pointer-events: none; }
 
     #shell { position: relative; z-index: 1; display: flex; gap: 20px; align-items: flex-start; }
@@ -314,17 +314,17 @@
   <div id="overlay-sub">// FUTURISTA //</div>
   <div class="gameover-score" id="gameover-score" style="display:none"></div>
   <div id="style-selector">
-    <button class="style-btn active" data-style="futurista">🔮 Futurista</button>
-    <button class="style-btn" data-style="classic">🕹 Clàssic</button>
-    <button class="style-btn" data-style="natural">🌿 Natural</button>
+    <button class="style-btn active" data-style="futurista">ðŸ”® Futurista</button>
+    <button class="style-btn" data-style="classic">ðŸ•¹ ClÃ ssic</button>
+    <button class="style-btn" data-style="natural">ðŸŒ¿ Natural</button>
     <button class="style-btn" data-style="matrix">Extra-dificil</button>
   </div>
   <button id="start-btn">INICIAR</button>
   <div class="controls-grid">
-    <span class="key">← →</span><span>Moure</span>
-    <span class="key">↑</span><span>Rotar</span>
-    <span class="key">↓</span><span>Baixar</span>
-    <span class="key">ESPAI</span><span>Drop ràpid</span>
+    <span class="key">â† â†’</span><span>Moure</span>
+    <span class="key">â†‘</span><span>Rotar</span>
+    <span class="key">â†“</span><span>Baixar</span>
+    <span class="key">ESPAI</span><span>Drop rÃ pid</span>
     <span class="key">P</span><span>Pausa</span>
   </div>
 </div>
@@ -341,8 +341,8 @@
     <div id="pause-overlay">
       <div class="pause-title">PAUSA</div>
       <div class="pause-hint" id="pause-hint">// sistema aturat //</div>
-      <button id="resume-btn">▶ Continuar</button>
-      <button id="quit-btn">✕ Sortir del joc</button>
+      <button id="resume-btn">â–¶ Continuar</button>
+      <button id="quit-btn">âœ• Sortir del joc</button>
     </div>
   </div>
   <div id="sidebar">
@@ -353,22 +353,24 @@
       <div class="bar-bg"><div class="bar-fill" id="level-bar" style="width:0%"></div></div>
     </div>
     <div id="next-wrap"><div id="next-label">Next</div><canvas id="next-canvas" width="100" height="100"></canvas></div>
-    <button id="pause-btn">⏸ Pausa</button>
+    <button id="pause-btn">â¸ Pausa</button>
   </div>
 </div>
 
+<script src="../../assets/js/novarena-sdk.js"></script>
+<script src="game.js"></script>
 <script>
-// ════════════════════════════════════════════════
+// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
 //  UTILS
-// ════════════════════════════════════════════════
+// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
 function srand(n) {
   const x = Math.sin(n * 127.1 + 311.7) * 43758.5453;
   return x - Math.floor(x);
 }
 
-// ════════════════════════════════════════════════
+// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
 //  STYLE
-// ════════════════════════════════════════════════
+// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
 let gameStyle = 'futurista';
 const THEME_UI = {
   futurista: { className: '', overlaySub: '// FUTURISTA //', pauseHint: '// sistema aturat //', comboGlow: true },
@@ -396,9 +398,9 @@ document.querySelectorAll('.style-btn').forEach(btn => {
   });
 });
 
-// ════════════════════════════════════════════════
+// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
 //  STARS
-// ════════════════════════════════════════════════
+// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
 (function(){
   const c = document.getElementById('stars');
   const cx = c.getContext('2d');
@@ -442,9 +444,9 @@ document.querySelectorAll('.style-btn').forEach(btn => {
   animStars();
 })();
 
-// ════════════════════════════════════════════════
+// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
 //  AUDIO
-// ════════════════════════════════════════════════
+// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
 const AudioCtx = window.AudioContext || window.webkitAudioContext;
 let audioCtx;
 function getAudio(){ if(!audioCtx) audioCtx = new AudioCtx(); return audioCtx; }
@@ -458,9 +460,9 @@ function sfxLine(n) { [523,659,784,1047].forEach((f,i)=>{ if(i<n) playTone(f,'sq
 function sfxDrop()  { playTone(880,'sine',0.05,0.1); playTone(440,'sine',0.1,0.08,0.05); }
 function sfxOver()  { [440,392,349,294,262].forEach((f,i)=>playTone(f,'sawtooth',0.25,0.15,i*0.12)); }
 
-// ════════════════════════════════════════════════
+// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
 //  PARTICLES
-// ════════════════════════════════════════════════
+// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
 const pCanvas=document.getElementById('particles');
 const pCtx=pCanvas.getContext('2d');
 pCanvas.width=window.innerWidth; pCanvas.height=window.innerHeight;
@@ -483,9 +485,9 @@ function updateParticles(){
   pCtx.globalAlpha=1;
 }
 
-// ════════════════════════════════════════════════
+// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
 //  PLANTS  (Natural style)
-// ════════════════════════════════════════════════
+// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
 const plantCanvas = document.getElementById('plants');
 const plantCtx = plantCanvas.getContext('2d');
 plantCanvas.width = window.innerWidth;
@@ -614,9 +616,9 @@ window.addEventListener('resize', () => {
   if (gameStyle === 'natural' && vines.length) generateVines();
 });
 
-// ════════════════════════════════════════════════
+// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
 //  COMBO
-// ════════════════════════════════════════════════
+// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
 function showCombo(text, color='#ffee00'){
   const el=document.getElementById('combo');
   const theme = currentThemeUI();
@@ -626,9 +628,9 @@ function showCombo(text, color='#ffee00'){
   setTimeout(()=>{ el.style.transition='opacity 0.8s ease,transform 0.8s ease'; el.style.opacity='0'; el.style.transform='translateX(-50%) scale(0.8) translateY(-30px)'; },50);
 }
 
-// ════════════════════════════════════════════════
+// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
 //  TETRIS ENGINE
-// ════════════════════════════════════════════════
+// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
 const COLS=10, ROWS=20, BLOCK=28;
 const canvas=document.getElementById('board');
 const ctx=canvas.getContext('2d');
@@ -785,10 +787,13 @@ function doLines(){
 
 function die(){
   dead=true; clearInterval(loop); sfxOver(); setPaused(false);
+  if (window.NovarenaTetrisBridge) {
+    window.NovarenaTetrisBridge.submitScore(score);
+  }
   garbageWarningActive = false;
   updateGarbageWarningUI();
   document.getElementById('pause-btn').classList.remove('visible');
-  document.getElementById('gameover-score').textContent='PUNTUACIÓ: '+score;
+  document.getElementById('gameover-score').textContent='PUNTUACIÃ“: '+score;
   document.getElementById('gameover-score').style.display='block';
   document.getElementById('overlay-title').textContent='GAME OVER';
   document.getElementById('start-btn').textContent='TORNAR A JUGAR';
@@ -797,7 +802,7 @@ function die(){
 
 function ghostY(){ let g=py; while(fits(piece.shape,px,g+1)) g++; return g; }
 
-// ─── DRAW FUTURISTA ───
+// â”€â”€â”€ DRAW FUTURISTA â”€â”€â”€
 function drawBlockFuturista(ctx2,x,y,id,alpha=1,glow=true){
   if(!id) return;
   const [col,glowCol]=PALETTE_FUTURISTA[id];
@@ -812,7 +817,7 @@ function drawBlockFuturista(ctx2,x,y,id,alpha=1,glow=true){
   ctx2.shadowBlur=0; ctx2.globalAlpha=1;
 }
 
-// ─── DRAW CLASSIC ───
+// â”€â”€â”€ DRAW CLASSIC â”€â”€â”€
 function drawBlockClassic(ctx2,x,y,id,alpha=1){
   if(!id) return;
   const [col,hi,sh]=PALETTE_CLASSIC[id];
@@ -824,7 +829,7 @@ function drawBlockClassic(ctx2,x,y,id,alpha=1){
   ctx2.globalAlpha=1;
 }
 
-// ─── DRAW NATURAL (amb eura) ───
+// â”€â”€â”€ DRAW NATURAL (amb eura) â”€â”€â”€
 function drawBlockNatural(ctx2,x,y,id,alpha=1){
   if(!id) return;
   const [col,hi,sh]=PALETTE_NATURAL[id];
@@ -842,7 +847,7 @@ function drawBlockNatural(ctx2,x,y,id,alpha=1){
   ctx2.strokeStyle='rgba(0,0,0,0.35)'; ctx2.lineWidth=1;
   ctx2.strokeRect(bx+1,by+1,BLOCK-2,BLOCK-2);
 
-  // ── Eura / ivy leaves ──
+  // â”€â”€ Eura / ivy leaves â”€â”€
   const seed = id * 137 + x * 31 + y * 17;
   const nLeaves = srand(seed) > 0.42 ? 2 : 1;
   for (let i = 0; i < nLeaves; i++) {
@@ -868,7 +873,7 @@ function drawBlockNatural(ctx2,x,y,id,alpha=1){
   ctx2.globalAlpha=1;
 }
 
-// ─── DRAW ───
+// â”€â”€â”€ DRAW â”€â”€â”€
 function drawBlockMatrix(ctx2,x,y,id,alpha=1,glow=true){
   if(!id) return;
   const [col,glowCol]=PALETTE_MATRIX[id];
@@ -1086,7 +1091,7 @@ function drawNext(){
   }
 }
 
-// ─── LOOP ───
+// â”€â”€â”€ LOOP â”€â”€â”€
 let animId;
 function frame(){
   if(!dead){
@@ -1122,6 +1127,9 @@ function setPaused(val){
 function startGame(){
   startLevel=getStartLevel();
   board=newBoard(); score=0; lines=0; level=startLevel; dead=false; flashRows=[]; shakeTimer=0;
+  if (window.NovarenaTetrisBridge) {
+    window.NovarenaTetrisBridge.resetRound();
+  }
   garbageWarningActive = false;
   scheduleNextGarbage();
   setPaused(false);
@@ -1141,7 +1149,7 @@ function startGame(){
   cancelAnimationFrame(animId); frame();
 }
 
-// ─── INPUT ───
+// â”€â”€â”€ INPUT â”€â”€â”€
 document.addEventListener('keydown',e=>{
   if(dead) return;
   if(paused&&e.key!=='p'&&e.key!=='P') return;
@@ -1171,3 +1179,6 @@ document.getElementById('quit-btn').addEventListener('click', ()=>{
 </script>
 </body>
 </html>
+
+
+

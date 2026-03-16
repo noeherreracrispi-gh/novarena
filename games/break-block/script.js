@@ -1,4 +1,4 @@
-const canvas = document.getElementById("gameCanvas");
+﻿const canvas = document.getElementById("gameCanvas");
 const ctx = canvas.getContext("2d");
 
 const scoreElement = document.getElementById("score");
@@ -166,6 +166,9 @@ function resetGame() {
   state.explosions = [];
   state.effects.expandUntil = 0;
   state.lastTime = 0;
+  if (window.NovarenaBreakBlockBridge) {
+    window.NovarenaBreakBlockBridge.resetRound();
+  }
   updateHud();
   showOverlay(
     "Break Block",
@@ -214,6 +217,9 @@ function startNextLevel() {
   state.explosions = [];
   state.effects.expandUntil = 0;
   state.lastTime = 0;
+  if (window.NovarenaBreakBlockBridge) {
+    window.NovarenaBreakBlockBridge.resetRound();
+  }
   updateHud();
   showOverlay(
     "Has passat de nivell",
@@ -529,6 +535,9 @@ function updateExplosions(timestamp) {
 function finishGame() {
   state.running = false;
   state.gameOver = true;
+  if (window.NovarenaBreakBlockBridge) {
+    window.NovarenaBreakBlockBridge.submitScore(state.score);
+  }
   showOverlay("Game Over", "Has quedat sense vides. Torna a provar.", "Reiniciar");
 }
 
@@ -1084,3 +1093,5 @@ window.addEventListener("resize", resizeGameLayout);
 resizeGameLayout();
 resetGame();
 render();
+
+

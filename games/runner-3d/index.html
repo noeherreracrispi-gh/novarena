@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="ca">
 <head>
   <meta charset="UTF-8">
@@ -145,7 +145,7 @@
   </div>
   <div class="hud-box">
     <div class="hud-lbl">VIDES</div>
-    <div class="hud-val" id="hLives">❤️❤️❤️</div>
+    <div class="hud-val" id="hLives">â¤ï¸â¤ï¸â¤ï¸</div>
   </div>
 </div>
 
@@ -156,16 +156,18 @@
   <div id="powerbar"></div>
 </div>
 
-<div id="turbo-banner">⚡ TURBO! ⚡</div>
+<div id="turbo-banner">âš¡ TURBO! âš¡</div>
 <div id="screen-flash"></div>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script src="../../assets/js/novarena-sdk.js"></script>
+<script src="game.js"></script>
 <script>
 'use strict';
 
-// ──────────────────────────────────────────────────────────────
+// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 //  RENDERER + SCENE
-// ──────────────────────────────────────────────────────────────
+// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 const canvas   = document.getElementById('canvas');
 const renderer = new THREE.WebGLRenderer({ canvas, antialias:true });
 renderer.setSize(innerWidth, innerHeight);
@@ -182,9 +184,9 @@ const camera = new THREE.PerspectiveCamera(65, innerWidth/innerHeight, 0.1, 150)
 camera.position.set(0, 5, -9);
 camera.lookAt(0, 0, 20);
 
-// ──────────────────────────────────────────────────────────────
+// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 //  LIGHTING
-// ──────────────────────────────────────────────────────────────
+// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 const ambLight = new THREE.AmbientLight(0x112244, 3);
 scene.add(ambLight);
 
@@ -199,9 +201,9 @@ cyanPL.position.set(-5, 5, 2);
 magentaPL.position.set(5, 5, 2);
 scene.add(cyanPL, magentaPL);
 
-// ──────────────────────────────────────────────────────────────
+// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 //  CONSTANTS
-// ──────────────────────────────────────────────────────────────
+// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 const LANES      = [-3.5, 0, 3.5];
 const TRACK_W    = 10;
 const TILE_LEN   = 12;
@@ -212,9 +214,9 @@ const LANE_LERP  = 0.14;
 const JUMP_V0    = 0.30;
 const GRAVITY    = -0.020;
 
-// ──────────────────────────────────────────────────────────────
+// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 //  GRID TEXTURE
-// ──────────────────────────────────────────────────────────────
+// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 function makeGridTex(bg, line) {
   const S = 256, c = document.createElement('canvas');
   c.width = S; c.height = S;
@@ -232,9 +234,9 @@ function makeGridTex(bg, line) {
   return t;
 }
 
-// ──────────────────────────────────────────────────────────────
+// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 //  TRACK TILES + RAILS
-// ──────────────────────────────────────────────────────────────
+// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 const tileMat = new THREE.MeshPhongMaterial({
   map: makeGridTex('#000818','#00245c'),
   color:0x0048ad, emissive:0x001133, specular:0x05070c, shininess:18
@@ -260,9 +262,9 @@ for (let i=0; i<NUM_TILES; i++) {
   });
 }
 
-// ──────────────────────────────────────────────────────────────
+// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 //  GALAXY
-// ──────────────────────────────────────────────────────────────
+// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 (function buildGalaxy() {
   function starLayer(n, spread, ylo, yhi, col, sz, op) {
     const geo = new THREE.BufferGeometry();
@@ -346,9 +348,9 @@ function updateTrackStars() {
 
 resetTrackStars();
 
-// ──────────────────────────────────────────────────────────────
+// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 //  PLAYER
-// ──────────────────────────────────────────────────────────────
+// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 const player = new THREE.Group();
 scene.add(player);
 
@@ -483,7 +485,7 @@ shield.add(shieldRingB);
 
 player.add(shield);
 
-// ── FIREBALL (turbo form) ──────────────────────────────────────
+// â”€â”€ FIREBALL (turbo form) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 const playerBodyParts = [body, headM, leftLeg, rightLeg, leftArm, rightArm];
 
 const fireballMat = new THREE.MeshPhongMaterial({
@@ -507,9 +509,9 @@ scene.add(firePL);
 
 player.position.set(0,0,0);
 
-// ──────────────────────────────────────────────────────────────
+// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 //  OBSTACLE POOL
-// ──────────────────────────────────────────────────────────────
+// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 const obsDefs = [
   { type:'tall',  geo: new THREE.BoxGeometry(2.6,2.9,1.2),
     mat: new THREE.MeshPhongMaterial({ color:0xff2200, emissive:0x660000, shininess:80 }) },
@@ -519,7 +521,7 @@ const obsDefs = [
     mat: new THREE.MeshPhongMaterial({ color:0xffbb33, emissive:0x664400, shininess:120 }) },
   { type:'ring',  geo: new THREE.TorusGeometry(1.1,0.3,8,16),
     mat: new THREE.MeshPhongMaterial({ color:0xff0077, emissive:0x440022, shininess:100 }) },
-  // NEW ──────────────────────────────────────────────────────────────────────
+  // NEW â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   { type:'spike', geo: new THREE.ConeGeometry(0.52,2.8,7),
     mat: new THREE.MeshPhongMaterial({ color:0x00ffff, emissive:0x006666, shininess:200 }) },
   { type:'laser', geo: new THREE.BoxGeometry(2.6,0.14,0.55),
@@ -609,9 +611,9 @@ function spawnWave() {
   });
 }
 
-// ──────────────────────────────────────────────────────────────
+// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 //  COIN POOL
-// ──────────────────────────────────────────────────────────────
+// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 const coinPool = [];
 const coinGeo = new THREE.OctahedronGeometry(0.40,0);
 const coinMat = new THREE.MeshPhongMaterial({ color:0xffee00, emissive:0x886600, shininess:150 });
@@ -635,9 +637,9 @@ function spawnCoins() {
   }
 }
 
-// ──────────────────────────────────────────────────────────────
+// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 //  POWERUP (shield)
-// ──────────────────────────────────────────────────────────────
+// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 const powerupPool = [];
 const puCoreMat = new THREE.MeshPhongMaterial({
   color:0x7dffe8, emissive:0x0b8f74, shininess:180, transparent:true, opacity:0.96
@@ -699,9 +701,9 @@ function spawnPowerup() {
   pu.userData.active = true; pu.visible = true;
 }
 
-// ──────────────────────────────────────────────────────────────
+// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 //  MAGNET POWERUP (very rare)
-// ──────────────────────────────────────────────────────────────
+// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 const magnetPool = [];
 const magnetPoleMat = new THREE.MeshPhongMaterial({
   color:0xd74444, emissive:0x4d1010, shininess:140
@@ -762,9 +764,9 @@ function spawnMagnet() {
   magnet.visible = true;
 }
 
-// ──────────────────────────────────────────────────────────────
+// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 //  PARTICLE POOL
-// ──────────────────────────────────────────────────────────────
+// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 const partPool = [];
 const partGeo = new THREE.SphereGeometry(0.09,3,3);
 for (let i=0; i<70; i++) {
@@ -815,9 +817,9 @@ function burst(pos, color, count=12) {
   }
 }
 
-// ──────────────────────────────────────────────────────────────
+// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 //  SHOCKWAVE POOL
-// ──────────────────────────────────────────────────────────────
+// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 const shockPool = [];
 const swGeo = new THREE.TorusGeometry(1, 0.07, 6, 32);
 for (let i = 0; i < 6; i++) {
@@ -840,9 +842,9 @@ function spawnShock(pos, col) {
   sw.visible = true;
 }
 
-// ──────────────────────────────────────────────────────────────
+// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 //  GAME STATE
-// ──────────────────────────────────────────────────────────────
+// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 let state      = 'start';
 let score      = 0;
 let coinScore  = 0;
@@ -876,9 +878,9 @@ let turboWasReady = false;
 let explodeFlash  = 0;    // frames of scene explosion flash
 let laneVX        = 0;    // lateral physics velocity
 
-// ──────────────────────────────────────────────────────────────
+// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 //  UI
-// ──────────────────────────────────────────────────────────────
+// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 const overlay     = document.getElementById('overlay');
 const hud         = document.getElementById('hud');
 const hScore      = document.getElementById('hScore');
@@ -893,9 +895,9 @@ const screenFlash = document.getElementById('screen-flash');
 
 hBest.textContent = best;
 
-// ──────────────────────────────────────────────────────────────
+// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 //  MUSIC
-// ──────────────────────────────────────────────────────────────
+// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 let audioCtx = null;
 let musicMaster = null;
 let musicPadBus = null;
@@ -1047,12 +1049,12 @@ function showStart() {
     <div class="subtitle">R U N N E R</div>
     <div class="divider"></div>
     <div class="instructions">
-      <span class="key">← →</span> Canvia de carril &nbsp; <span class="key">ESPAI</span> Salta<br>
-      En mòbil: llisca esquerra/dreta · llisca amunt per saltar<br>
-      Esquiva els obstacles &nbsp;·&nbsp; Recull les monedes ◆<br>
-      Agafa l'escut verd <span style="color:#0fa">◈</span> i, si tens sort, un imant molt rar per atraure monedes!
+      <span class="key">â† â†’</span> Canvia de carril &nbsp; <span class="key">ESPAI</span> Salta<br>
+      En mÃ²bil: llisca esquerra/dreta Â· llisca amunt per saltar<br>
+      Esquiva els obstacles &nbsp;Â·&nbsp; Recull les monedes â—†<br>
+      Agafa l'escut verd <span style="color:#0fa">â—ˆ</span> i, si tens sort, un imant molt rar per atraure monedes!
     </div>
-    <button class="btn" id="startBtn">▶ INICIAR</button>
+    <button class="btn" id="startBtn">â–¶ INICIAR</button>
   `;
   overlay.style.display = 'flex';
   hud.style.display = 'none';
@@ -1064,9 +1066,9 @@ function showGameOver() {
   overlay.innerHTML = `
     <div class="big-title" style="font-size:clamp(38px,9vw,65px)">GAME OVER</div>
     <div class="divider"></div>
-    <div class="score-big">PUNTUACIÓ: <span>${score}</span></div>
-    <div class="best-line">MILLOR RÈCORD: ${best}</div>
-    <button class="btn" id="startBtn">↺ TORNAR A JUGAR</button>
+    <div class="score-big">PUNTUACIÃ“: <span>${score}</span></div>
+    <div class="best-line">MILLOR RÃˆCORD: ${best}</div>
+    <button class="btn" id="startBtn">â†º TORNAR A JUGAR</button>
   `;
   overlay.style.display = 'flex';
   hud.style.display = 'none';
@@ -1076,6 +1078,9 @@ function showGameOver() {
 
 function startGame() {
   state = 'playing';
+  if (window.NovarenaRunnerBridge) {
+    window.NovarenaRunnerBridge.resetRound();
+  }
   ensureMusic();
   if (audioCtx) {
     audioCtx.resume().catch(()=>{});
@@ -1102,7 +1107,7 @@ function startGame() {
   turboBanner.classList.remove('show');
   shockPool.forEach(s => { s.userData.active=false; s.visible=false; });
   lives = 3; invincible = false; invTimer = 0;
-  hLives.textContent = '❤️❤️❤️';
+  hLives.textContent = 'â¤ï¸â¤ï¸â¤ï¸';
   nextObs = 80; nextCoin = 50; nextPU = 400; nextMagnet = 1800 + Math.floor(Math.random()*900);
 
   obsPool.forEach(o   => { o.userData.active=false; o.visible=false; });
@@ -1122,9 +1127,9 @@ function startGame() {
   hBest.textContent = best;
 }
 
-// ──────────────────────────────────────────────────────────────
+// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 //  INPUT
-// ──────────────────────────────────────────────────────────────
+// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 const keys = {};
 document.addEventListener('keydown', e => {
   if (keys[e.code]) return;
@@ -1155,9 +1160,9 @@ document.addEventListener('touchend', e=>{
 function doJump() { jumping=true; jumpV=JUMP_V0; }
 function doCrouch() { crouchTimer = Math.max(crouchTimer, 0.45); }
 
-// ──────────────────────────────────────────────────────────────
+// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 //  COLLISION
-// ──────────────────────────────────────────────────────────────
+// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 function hits(obs) {
   const xThresh = (obs.userData.type==='spike'||obs.userData.type==='cube') ? 1.0 : 1.4;
   if (Math.abs(player.position.x - obs.position.x) > xThresh) return false;
@@ -1179,9 +1184,9 @@ function near(obj, rx, ry, rz) {
   );
 }
 
-// ──────────────────────────────────────────────────────────────
+// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 //  MAIN LOOP
-// ──────────────────────────────────────────────────────────────
+// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 const clock = new THREE.Clock();
 
 function animate() {
@@ -1210,11 +1215,11 @@ function animate() {
     }
     camera.updateProjectionMatrix();
 
-    // TURBO ready detection — show banner once when bar fills up
+    // TURBO ready detection â€” show banner once when bar fills up
     const turboNowReady = (powerFill >= 1 && !turboActive);
     if (turboNowReady && !turboWasReady) {
       powerBar.classList.add('ready');
-      turboLbl.textContent = '⚡ LLEST!';
+      turboLbl.textContent = 'âš¡ LLEST!';
       turboBanner.classList.remove('show');
       void turboBanner.offsetWidth; // reflow
       turboBanner.classList.add('show');
@@ -1253,14 +1258,14 @@ function animate() {
     }
     firePL.position.set(player.position.x, playerY+1, player.position.z);
 
-    // Lane movement — fast lerp, no overshoot, snaps cleanly to target
+    // Lane movement â€” fast lerp, no overshoot, snaps cleanly to target
     const prevLaneX = laneX;
     laneX += (LANES[laneTarget] - laneX) * 0.22;
     if (Math.abs(LANES[laneTarget] - laneX) < 0.004) laneX = LANES[laneTarget];
     laneVX = laneX - prevLaneX;  // only used for lean
     player.position.x = laneX;
 
-    // Group NEVER rotates — only slides horizontally
+    // Group NEVER rotates â€” only slides horizontally
     player.rotation.set(0, 0, 0);
 
     // Invincibility countdown + player flash
@@ -1283,11 +1288,11 @@ function animate() {
     crouchAmt += (crouchTarget - crouchAmt) * 0.24;
     ducking = crouchAmt > 0.55;
 
-    // Running animation — frequency scales with speed, NO vertical displacement on player
+    // Running animation â€” frequency scales with speed, NO vertical displacement on player
     const runFreq = 10 + spd * 20;
     const swing   = Math.sin(t * runFreq) * (jumping ? 0 : 0.72) * (1 - crouchAmt * 0.55);
     const armSwing = Math.sin(t * (runFreq * 0.62)) * (jumping ? 0 : 0.42) * (1 - crouchAmt * 0.45);
-    player.position.y = playerY;  // strictly horizontal — no bob on the group
+    player.position.y = playerY;  // strictly horizontal â€” no bob on the group
 
     body.position.y     = 0.98 - crouchAmt * 0.22;
     headM.position.y    = 1.77 - crouchAmt * 0.14;
@@ -1306,7 +1311,7 @@ function animate() {
     rightLeg.rotation.x = -swing - legFold;
     leftArm.rotation.x  = -armSwing - crouchAmt * 0.28;
     rightArm.rotation.x =  armSwing - crouchAmt * 0.28;
-    // Arms flare on jump only — no rotation during lane change
+    // Arms flare on jump only â€” no rotation during lane change
     const armZ = jumping ? 0.5 : crouchAmt * 0.16;
     leftArm.rotation.z  =  armZ;  rightArm.rotation.z  = -armZ;
     body.rotation.x     = (jumping ? -0.16 : 0.06) + crouchAmt * 0.24;
@@ -1382,9 +1387,9 @@ function animate() {
       if (o.position.z < DESPAWN_Z) { o.userData.active=false; o.visible=false; continue; }
       if (hits(o)) {
         if (turboActive) {
-          // FIREBALL: destroys everything — NUCLEAR
+          // FIREBALL: destroys everything â€” NUCLEAR
           const ep = o.position.clone();
-          // Wave 1 — instant
+          // Wave 1 â€” instant
           burst(ep,                                              0xffffff, 30);
           burst(ep,                                              0xff6600, 30);
           burst(ep,                                              0xffee00, 25);
@@ -1407,7 +1412,7 @@ function animate() {
           // Violent camera punch
           camera.position.x  = (Math.random()-.5)*0.9;
           camera.position.y  = 5 + (Math.random()-.5)*0.4;
-          // Wave 2 — delayed aftershock (200ms)
+          // Wave 2 â€” delayed aftershock (200ms)
           const ep2 = ep.clone();
           setTimeout(() => {
             if (state !== 'playing') return;
@@ -1418,7 +1423,7 @@ function animate() {
             camera.position.x = (Math.random()-.5)*0.5;
             camera.position.y = 5 + (Math.random()-.5)*0.25;
           }, 200);
-          // Wave 3 — delayed aftershock (430ms)
+          // Wave 3 â€” delayed aftershock (430ms)
           setTimeout(() => {
             if (state !== 'playing') return;
             burst(ep2, 0xffee00, 18);
@@ -1436,13 +1441,13 @@ function animate() {
         } else if (!invincible) {
           burst(player.position.clone().add(new THREE.Vector3(0,1,0)), 0xff3300, 20);
           lives--;
-          hLives.textContent = '❤️'.repeat(lives) + '🖤'.repeat(3-lives);
+          hLives.textContent = 'â¤ï¸'.repeat(lives) + 'ðŸ–¤'.repeat(3-lives);
           if (lives <= 0) {
             if (score>best) { best=score; localStorage.setItem('neon_best',best); }
             state='dead';
-            const _pn=localStorage.getItem('playarena_username');
-            const _pt=localStorage.getItem('playarena_token');
-            if(_pn && _pt) fetch('http://localhost:3000/api/scores',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({name:_pn,token:_pt,game:'runner3d',score})}).catch(()=>{});
+            if (window.NovarenaRunnerBridge) {
+              window.NovarenaRunnerBridge.submitScore(score);
+            }
             setTimeout(showGameOver, 900);
           } else {
             invincible = true;
@@ -1565,7 +1570,7 @@ function animate() {
   // Visor pulse
   pGlow.emissiveIntensity = 0.6 + Math.sin(t*4)*0.4;
 
-  // Camera fixed at center — player moves, not the world
+  // Camera fixed at center â€” player moves, not the world
   if (state !== 'playing' || !turboActive) {
     camera.position.x += (0 - camera.position.x) * 0.2;
     camera.position.y += (5 - camera.position.y) * 0.2;
@@ -1576,20 +1581,22 @@ function animate() {
   renderer.render(scene, camera);
 }
 
-// ──────────────────────────────────────────────────────────────
+// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 //  RESIZE
-// ──────────────────────────────────────────────────────────────
+// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 window.addEventListener('resize', () => {
   camera.aspect = innerWidth/innerHeight;
   camera.updateProjectionMatrix();
   renderer.setSize(innerWidth, innerHeight);
 });
 
-// ──────────────────────────────────────────────────────────────
+// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 //  INIT
-// ──────────────────────────────────────────────────────────────
+// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 showStart();
 animate();
 </script>
 </body>
 </html>
+
+
