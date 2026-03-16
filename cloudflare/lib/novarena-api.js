@@ -4,6 +4,19 @@ var GAME_ID_ALIASES = {
 
 var DEFAULT_LIMIT = 10;
 var MAX_LIMIT = 100;
+var GAME_LEADERBOARD_QUERY = [
+  'SELECT id, game, player_id, player_name, score, score_type, created_at',
+  'FROM scores',
+  'WHERE game = ?1',
+  'ORDER BY score DESC, created_at DESC',
+  'LIMIT ?2'
+].join(' ');
+var GLOBAL_LEADERBOARD_QUERY = [
+  'SELECT id, game, player_id, player_name, score, score_type, created_at',
+  'FROM scores',
+  'ORDER BY score DESC, created_at DESC',
+  'LIMIT ?1'
+].join(' ');
 
 export class HttpError extends Error {
   constructor(status, message) {
@@ -164,21 +177,16 @@ export async function insertScore(env, entry) {
 export async function getLeaderboard(env, options) {
   var database = requireDatabase(env);
   var normalized = options || {};
-  var query = [
-    'SELECT id, game, player_id, player_name, score, score_type, created_at',
-    'FROM scores'
-  ];
   var statement;
 
   if (normalized.game) {
-    query.push('WHERE game = ?1');
-    query.push('ORDER BY score DESC, created_at DESC');
-    query.push('LIMIT ?2');
-    statement = database.prepare(query.join(' ')).bind(normalized.game, normalized.limit || DEFAULT_LIMIT);
+    // Match idx_scores_game_leaderboard: (game, score DESC, created_at DESC).
+    statement = database.prepare(GAME_LEADERBOARD_QUERY).bind(
+      normalized.game,
+      normalized.limit || DEFAULT_LIMIT
+    );
   } else {
-    query.push('ORDER BY score DESC, created_at DESC');
-    query.push('LIMIT ?1');
-    statement = database.prepare(query.join(' ')).bind(normalized.limit || DEFAULT_LIMIT);
+    statement = database.prepare(GLOBAL_LEADERBOARD_QUERY).bind(normalized.limit || DEFAULT_LIMIT);
   }
 
   var result = await statement.all();
