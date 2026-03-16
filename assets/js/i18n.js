@@ -125,21 +125,21 @@ var I18N = {
         bodyTail: 'Troba el teu proxim repte sense perdre temps en explicacions.',
         library: 'Biblioteca',
         availableSuffix: 'jocs disponibles',
-        footer: 'Cataleg centralitzat per facilitar noves altes de jocs.'
+        footer: 'Un cataleg pensat per trobar partida rapida i tornar-hi quan vulguis.'
       },
       leaderboard: {
-        eyebrow: 'Ranking base',
+        eyebrow: 'Leaderboard',
         title: 'Leaderboard',
-        accent: 'separat de la portada.',
-        bodyLead: 'Aquesta pagina llegeix',
-        bodyTail: 'i mostra el ranking sense dependre d\'un backend actiu. Es una base neta per quan vulgueu afegir classificacions generals o per joc.',
-        footer: 'Base preparada per separar ranking global i ranking per joc.'
+        accent: 'de Novarena.',
+        bodyLead: 'Consulta qui domina la plataforma',
+        bodyTail: 'i compara els millors resultats globals, d\'avui o de la setmana.',
+        footer: 'Segueix el ritme de la competicio i mira qui esta pujant mes fort.'
       },
       profile: {
-        eyebrow: 'Reserva de plataforma',
+        eyebrow: 'Jugador actual',
         title: 'Perfil',
-        accent: 'preparat per al seguent salt.',
-        body: 'Aqui hi podreu afegir avatar, dades del jugador, progressio i preferencies sense tocar l\'estructura dels jocs.',
+        accent: 'de jugador.',
+        body: 'Consulta el teu nom, les teves millors puntuacions i l\'activitat recent en un sol lloc.',
         cards: {
           identityTitle: 'Identitat',
           identityBody: 'Nom public, avatar i presentacio curta del jugador.',
@@ -148,13 +148,13 @@ var I18N = {
           settingsTitle: 'Configuracio',
           settingsBody: 'Base per a preferencies, privacitat i connexio amb la comunitat.'
         },
-        footer: 'Pagina reservada per al perfil, sense dependencies noves.'
+        footer: 'El teu espai per seguir progres, resultats i reptes actius.'
       },
       community: {
-        eyebrow: 'Reserva de plataforma',
+        eyebrow: 'Comunitat',
         title: 'Comunitat',
-        accent: 'llesta per creixer.',
-        body: 'Aquesta pagina queda preparada per allotjar novetats, reptes setmanals, comentaris i espais de participacio.',
+        accent: 'en moviment.',
+        body: 'Segueix novetats, reptes destacats i espais de participacio per mantenir Novarena viva.',
         cards: {
           challengesTitle: 'Reptes',
           challengesBody: 'Base per a reptes de la setmana i partides destacades.',
@@ -163,7 +163,7 @@ var I18N = {
           participationTitle: 'Participacio',
           participationBody: 'Base per a suggeriments, comentaris i activitats de comunitat.'
         },
-        footer: 'Pagina reservada per a comunitat i dinamica del portal.'
+        footer: 'Un espai per connectar el que passa a Novarena amb la seva comunitat.'
       }
     }
   },
@@ -289,21 +289,21 @@ var I18N = {
         bodyTail: 'Encuentra tu siguiente reto sin perder tiempo en explicaciones.',
         library: 'Biblioteca',
         availableSuffix: 'juegos disponibles',
-        footer: 'Catalogo centralizado para facilitar nuevas altas de juegos.'
+        footer: 'Un catalogo pensado para encontrar partida rapida y volver cuando quieras.'
       },
       leaderboard: {
-        eyebrow: 'Ranking base',
+        eyebrow: 'Leaderboard',
         title: 'Clasificacion',
-        accent: 'separada de la portada.',
-        bodyLead: 'Esta pagina lee',
-        bodyTail: 'y muestra la clasificacion sin depender de un backend activo. Es una base limpia para futuras clasificaciones globales o por juego.',
-        footer: 'Base preparada para separar clasificacion global y clasificacion por juego.'
+        accent: 'de Novarena.',
+        bodyLead: 'Consulta quien domina la plataforma',
+        bodyTail: 'y compara los mejores resultados globales, de hoy o de la semana.',
+        footer: 'Sigue el ritmo de la competicion y mira quien esta subiendo con mas fuerza.'
       },
       profile: {
-        eyebrow: 'Reserva de plataforma',
+        eyebrow: 'Jugador actual',
         title: 'Perfil',
-        accent: 'preparado para el siguiente salto.',
-        body: 'Aqui podreis anadir avatar, datos del jugador, progresion y preferencias sin tocar la estructura de los juegos.',
+        accent: 'de jugador.',
+        body: 'Consulta tu nombre, tus mejores puntuaciones y la actividad reciente en un solo lugar.',
         cards: {
           identityTitle: 'Identidad',
           identityBody: 'Nombre publico, avatar y presentacion corta del jugador.',
@@ -312,13 +312,13 @@ var I18N = {
           settingsTitle: 'Configuracion',
           settingsBody: 'Base para preferencias, privacidad y conexion con la comunidad.'
         },
-        footer: 'Pagina reservada para el perfil, sin dependencias nuevas.'
+        footer: 'Tu espacio para seguir progreso, resultados y retos activos.'
       },
       community: {
-        eyebrow: 'Reserva de plataforma',
+        eyebrow: 'Comunidad',
         title: 'Comunidad',
-        accent: 'lista para crecer.',
-        body: 'Esta pagina queda preparada para alojar novedades, retos semanales, comentarios y espacios de participacion.',
+        accent: 'en movimiento.',
+        body: 'Sigue novedades, retos destacados y espacios de participacion para mantener Novarena viva.',
         cards: {
           challengesTitle: 'Retos',
           challengesBody: 'Base para retos de la semana y partidas destacadas.',
@@ -327,7 +327,7 @@ var I18N = {
           participationTitle: 'Participacion',
           participationBody: 'Base para sugerencias, comentarios y actividad de comunidad.'
         },
-        footer: 'Pagina reservada para comunidad y dinamica del portal.'
+        footer: 'Un espacio para conectar lo que pasa en Novarena con su comunidad.'
       }
     }
   },
@@ -453,21 +453,21 @@ var I18N = {
         bodyTail: 'Find your next challenge without wading through intro text.',
         library: 'Library',
         availableSuffix: 'games available',
-        footer: 'Centralized catalog to make new game additions easier.'
+        footer: 'A catalog built to get you into a quick match and bring you back for more.'
       },
       leaderboard: {
-        eyebrow: 'Ranking base',
+        eyebrow: 'Leaderboard',
         title: 'Leaderboard',
-        accent: 'separated from the homepage.',
-        bodyLead: 'This page reads',
-        bodyTail: 'and shows the ranking without depending on an active backend. It is a clean base for future global or per-game leaderboards.',
-        footer: 'Ready to separate global ranking from per-game ranking.'
+        accent: 'for Novarena.',
+        bodyLead: 'See who is leading the platform',
+        bodyTail: 'and compare the best all-time, today and this week results.',
+        footer: 'Track the competition and see who is climbing the fastest.'
       },
       profile: {
-        eyebrow: 'Platform reserve',
+        eyebrow: 'Current player',
         title: 'Profile',
-        accent: 'ready for the next step.',
-        body: 'Here you will be able to add avatar, player data, progression and preferences without touching the game structure.',
+        accent: 'hub.',
+        body: 'Check your name, best scores and recent activity in one place.',
         cards: {
           identityTitle: 'Identity',
           identityBody: 'Public name, avatar and short player intro.',
@@ -476,13 +476,13 @@ var I18N = {
           settingsTitle: 'Settings',
           settingsBody: 'Base for preferences, privacy and community connection.'
         },
-        footer: 'Reserved profile page with no new dependencies.'
+        footer: 'Your space to follow progress, results and active challenges.'
       },
       community: {
-        eyebrow: 'Platform reserve',
+        eyebrow: 'Community',
         title: 'Community',
-        accent: 'ready to grow.',
-        body: 'This page is ready to host news, weekly challenges, comments and participation spaces.',
+        accent: 'in motion.',
+        body: 'Follow news, highlighted challenges and participation spaces that keep Novarena alive.',
         cards: {
           challengesTitle: 'Challenges',
           challengesBody: 'Base for weekly challenges and featured matches.',
@@ -491,7 +491,7 @@ var I18N = {
           participationTitle: 'Participation',
           participationBody: 'Base for suggestions, comments and community activity.'
         },
-        footer: 'Reserved page for community and platform activity.'
+        footer: 'A place to connect what happens in Novarena with the players around it.'
       }
     }
   },
@@ -617,21 +617,21 @@ var I18N = {
         bodyTail: 'Trova la tua prossima sfida senza perdere tempo in spiegazioni.',
         library: 'Biblioteca',
         availableSuffix: 'giochi disponibili',
-        footer: 'Catalogo centralizzato per facilitare nuove aggiunte di giochi.'
+        footer: 'Un catalogo pensato per trovare una partita veloce e tornare quando vuoi.'
       },
       leaderboard: {
-        eyebrow: 'Base classifica',
+        eyebrow: 'Leaderboard',
         title: 'Classifica',
-        accent: 'separata dalla home.',
-        bodyLead: 'Questa pagina legge',
-        bodyTail: 'e mostra la classifica senza dipendere da un backend attivo. E una base pulita per future classifiche globali o per gioco.',
-        footer: 'Pronta per separare classifica globale e classifica per gioco.'
+        accent: 'di Novarena.',
+        bodyLead: 'Guarda chi guida la piattaforma',
+        bodyTail: 'e confronta i migliori risultati globali, di oggi o della settimana.',
+        footer: 'Segui il ritmo della competizione e scopri chi sta salendo piu forte.'
       },
       profile: {
-        eyebrow: 'Area riservata',
+        eyebrow: 'Giocatore attuale',
         title: 'Profilo',
-        accent: 'pronto per il prossimo passo.',
-        body: 'Qui potrai aggiungere avatar, dati giocatore, progressione e preferenze senza toccare la struttura dei giochi.',
+        accent: 'giocatore.',
+        body: 'Controlla il tuo nome, i tuoi migliori punteggi e l\'attivita recente in un solo posto.',
         cards: {
           identityTitle: 'Identita',
           identityBody: 'Nome pubblico, avatar e breve presentazione del giocatore.',
@@ -640,13 +640,13 @@ var I18N = {
           settingsTitle: 'Impostazioni',
           settingsBody: 'Base per preferenze, privacy e connessione con la community.'
         },
-        footer: 'Pagina riservata al profilo, senza nuove dipendenze.'
+        footer: 'Il tuo spazio per seguire progressi, risultati e sfide attive.'
       },
       community: {
-        eyebrow: 'Area riservata',
+        eyebrow: 'Community',
         title: 'Comunita',
-        accent: 'pronta a crescere.',
-        body: 'Questa pagina e pronta per ospitare novita, sfide settimanali, commenti e spazi di partecipazione.',
+        accent: 'in movimento.',
+        body: 'Segui novita, sfide in evidenza e spazi di partecipazione per tenere viva Novarena.',
         cards: {
           challengesTitle: 'Sfide',
           challengesBody: 'Base per sfide della settimana e partite in evidenza.',
@@ -655,7 +655,7 @@ var I18N = {
           participationTitle: 'Partecipazione',
           participationBody: 'Base per suggerimenti, commenti e attivita della community.'
         },
-        footer: 'Pagina riservata alla community e alla vita della piattaforma.'
+        footer: 'Uno spazio per collegare quello che succede in Novarena con la sua community.'
       }
     }
   }
