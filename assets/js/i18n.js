@@ -115,11 +115,14 @@ var I18N = {
     },
     pages: {
       games: {
-        eyebrow: 'Cataleg general',
-        title: 'Tots els jocs',
-        accent: 'viuen ara sota /games.',
-        bodyLead: 'La portada principal pot conservar el seu disseny controlat mentre el cataleg llegeix les metadades des de',
-        bodyTail: 'Afegir un joc nou ara es redueix a crear la seva carpeta i afegir una entrada al JSON.',
+        eyebrow: 'Tria i juga',
+        title: 'Explora els jocs',
+        body: 'Obre un joc, entra en partida i comenca a pujar al ranking en segons.',
+        cta: 'Veure jocs',
+        countSuffix: 'jocs',
+        accent: 'llestos per jugar.',
+        bodyLead: 'Obre un joc, entra en partida i comenca a pujar al ranking en segons.',
+        bodyTail: 'Troba el teu proxim repte sense perdre temps en explicacions.',
         library: 'Biblioteca',
         availableSuffix: 'jocs disponibles',
         footer: 'Cataleg centralitzat per facilitar noves altes de jocs.'
@@ -276,11 +279,14 @@ var I18N = {
     },
     pages: {
       games: {
-        eyebrow: 'Catalogo general',
-        title: 'Todos los juegos',
-        accent: 'viven ahora bajo /games.',
-        bodyLead: 'La portada principal puede conservar su diseno controlado mientras el catalogo lee los metadatos desde',
-        bodyTail: 'Anadir un juego nuevo ahora se reduce a crear su carpeta y anadir una entrada al JSON.',
+        eyebrow: 'Elige y juega',
+        title: 'Explora los juegos',
+        body: 'Abre un juego, entra en partida y empieza a subir en el ranking en segundos.',
+        cta: 'Ver juegos',
+        countSuffix: 'juegos',
+        accent: 'listos para jugar.',
+        bodyLead: 'Abre un juego, entra en partida y empieza a subir en el ranking en segundos.',
+        bodyTail: 'Encuentra tu siguiente reto sin perder tiempo en explicaciones.',
         library: 'Biblioteca',
         availableSuffix: 'juegos disponibles',
         footer: 'Catalogo centralizado para facilitar nuevas altas de juegos.'
@@ -437,11 +443,14 @@ var I18N = {
     },
     pages: {
       games: {
-        eyebrow: 'General catalog',
-        title: 'All games',
-        accent: 'now live under /games.',
-        bodyLead: 'The main homepage can keep its visual identity while the catalog reads metadata from',
-        bodyTail: 'Adding a new game now simply means creating its folder and adding one JSON entry.',
+        eyebrow: 'Pick and play',
+        title: 'Explore the games',
+        body: 'Open a game, jump into a run and start climbing the leaderboard in seconds.',
+        cta: 'View games',
+        countSuffix: 'games',
+        accent: 'ready to play.',
+        bodyLead: 'Open a game, jump into a run and start climbing the leaderboard in seconds.',
+        bodyTail: 'Find your next challenge without wading through intro text.',
         library: 'Library',
         availableSuffix: 'games available',
         footer: 'Centralized catalog to make new game additions easier.'
@@ -598,11 +607,14 @@ var I18N = {
     },
     pages: {
       games: {
-        eyebrow: 'Catalogo generale',
-        title: 'Tutti i giochi',
-        accent: 'ora vivono sotto /games.',
-        bodyLead: 'La home principale puo mantenere la sua identita visiva mentre il catalogo legge i metadati da',
-        bodyTail: 'Aggiungere un nuovo gioco ora significa solo creare la sua cartella e aggiungere una voce nel JSON.',
+        eyebrow: 'Scegli e gioca',
+        title: 'Esplora i giochi',
+        body: 'Apri un gioco, entra subito in partita e inizia a salire in classifica in pochi secondi.',
+        cta: 'Vedi giochi',
+        countSuffix: 'giochi',
+        accent: 'pronti da giocare.',
+        bodyLead: 'Apri un gioco, entra subito in partita e inizia a salire in classifica in pochi secondi.',
+        bodyTail: 'Trova la tua prossima sfida senza perdere tempo in spiegazioni.',
         library: 'Biblioteca',
         availableSuffix: 'giochi disponibili',
         footer: 'Catalogo centralizzato per facilitare nuove aggiunte di giochi.'

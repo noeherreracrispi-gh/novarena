@@ -36,17 +36,17 @@
   </header>
 
   <main class="shell page-main">
-    <section class="page-hero">
-      <p class="eyebrow" data-i18n="pages.games.eyebrow">Cataleg general</p>
-      <h1><span data-i18n="pages.games.title">Tots els jocs</span> <span data-i18n="pages.games.accent">viuen ara sota /games.</span></h1>
-      <p>
-        <span data-i18n="pages.games.bodyLead">La portada principal pot conservar el seu disseny controlat mentre el cataleg llegeix les metadades des de</span>
-        <code>data/games.json</code>.
-        <span data-i18n="pages.games.bodyTail">Afegir un joc nou ara es redueix a crear la seva carpeta i afegir una entrada al JSON.</span>
-      </p>
+    <section class="page-hero games-hero">
+      <p class="eyebrow" data-i18n="pages.games.eyebrow">Tria i juga</p>
+      <h1><span data-i18n="pages.games.title">Explora els jocs</span></h1>
+      <p data-i18n="pages.games.body">Obre un joc, entra en partida i comenca a pujar al ranking en segons.</p>
+      <div class="hero-actions">
+        <a class="button button-primary" href="#games-catalog" data-i18n="pages.games.cta">Veure jocs</a>
+        <span class="game-category"><span data-game-count>0</span> <span data-i18n="pages.games.countSuffix">jocs</span></span>
+      </div>
     </section>
 
-    <section class="section-block">
+    <section class="section-block games-catalog-section" id="games-catalog">
       <div class="section-head">
         <div>
           <p class="eyebrow" data-i18n="pages.games.library">Biblioteca</p>
