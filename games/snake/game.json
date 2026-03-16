@@ -1,0 +1,9 @@
+﻿{
+  "id": "snake",
+  "title": "Snake",
+  "description": "Menja, creix i no et tanquis. El classic continua sent una maquina de reflexos.",
+  "path": "games/snake/index.html",
+  "thumbnail": "assets/img/game-snake.svg",
+  "category": "Classic",
+  "scoreType": "points"
+}

@@ -1,0 +1,66 @@
+﻿<!DOCTYPE html>
+<html lang="ca">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Novarena | Profile</title>
+  <meta name="description" content="Base futura per al perfil de jugador de Novarena.">
+  <link rel="stylesheet" href="assets/css/site.css">
+  <script src="assets/js/i18n.js" defer></script>
+  <script src="assets/js/site.js" defer></script>
+</head>
+<body>
+  <header class="site-header">
+    <a class="brand" href="index.html" data-i18n="aria.backHome" data-i18n-attr="aria-label">
+      <img class="brand-mark" src="assets/icons/novarena-badge.svg" alt="">
+      <span class="brand-copy">
+        <strong>Novarena</strong>
+        <small data-i18n="brand.profile">Profile</small>
+      </span>
+    </a>
+    <div class="site-header-actions">
+      <nav class="site-nav" data-i18n="aria.nav" data-i18n-attr="aria-label">
+        <a href="index.html" data-i18n="nav.home">Home</a>
+        <a href="games.html" data-i18n="nav.games">Jocs</a>
+        <a href="leaderboard.html" data-i18n="nav.leaderboard">Leaderboard</a>
+        <a href="profile.html" aria-current="page" data-i18n="nav.profile">Profile</a>
+        <a href="community.html" data-i18n="nav.community">Community</a>
+      </nav>
+      <div class="lang-switcher" data-language-switcher>
+        <button class="lang-option" type="button" data-lang="ca">CA</button>
+        <button class="lang-option" type="button" data-lang="es">ES</button>
+        <button class="lang-option" type="button" data-lang="en">EN</button>
+        <button class="lang-option" type="button" data-lang="it">IT</button>
+      </div>
+    </div>
+  </header>
+
+  <main class="shell page-main">
+    <section class="page-hero">
+      <p class="eyebrow" data-i18n="pages.profile.eyebrow">Reserva de plataforma</p>
+      <h1><span data-i18n="pages.profile.title">Profile</span> <span data-i18n="pages.profile.accent">preparat per al seguent salt.</span></h1>
+      <p data-i18n="pages.profile.body">Aqui hi podreu afegir avatar, dades del jugador, progressio i preferencies sense tocar l'estructura dels jocs.</p>
+    </section>
+
+    <section class="feature-grid">
+      <article class="feature-card">
+        <h3 data-i18n="pages.profile.cards.identityTitle">Identitat</h3>
+        <p data-i18n="pages.profile.cards.identityBody">Nom public, avatar i presentacio curta del jugador.</p>
+      </article>
+      <article class="feature-card">
+        <h3 data-i18n="pages.profile.cards.progressTitle">Progressio</h3>
+        <p data-i18n="pages.profile.cards.progressBody">Historial de punts, jocs preferits i objectius desbloquejats.</p>
+      </article>
+      <article class="feature-card">
+        <h3 data-i18n="pages.profile.cards.settingsTitle">Configuracio</h3>
+        <p data-i18n="pages.profile.cards.settingsBody">Base per a preferencies, privacitat i connexio amb la comunitat.</p>
+      </article>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <p>Novarena <span data-current-year></span></p>
+    <p data-i18n="pages.profile.footer">Pagina reservada per al perfil, sense dependencies noves.</p>
+  </footer>
+</body>
+</html>

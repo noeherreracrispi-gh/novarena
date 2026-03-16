@@ -1,0 +1,34 @@
+[
+  {
+    "id": "tetris",
+    "title": "Tetris",
+    "description": "Col.loca les peces, completa linies i aguanta la pressio partida rere partida.",
+    "path": "games/tetris/index.html",
+    "thumbnail": "assets/img/game-tetris.svg",
+    "category": "Puzzle"
+  },
+  {
+    "id": "snake",
+    "title": "Snake",
+    "description": "Menja, creix i no et tanquis. El classic continua sent una maquina de reflexos.",
+    "path": "games/snake/index.html",
+    "thumbnail": "assets/img/game-snake.svg",
+    "category": "Classic"
+  },
+  {
+    "id": "runner3d",
+    "title": "Neon Runner 3D",
+    "description": "Corre per una pista neon, esquiva obstacles i intenta allargar la partida al maxim.",
+    "path": "games/runner-3d/index.html",
+    "thumbnail": "assets/img/game-runner.svg",
+    "category": "Runner"
+  },
+  {
+    "id": "break-block",
+    "title": "Break Block",
+    "description": "Rebota la pilota, neteja la pantalla i mantingues el ritme de l'arcade.",
+    "path": "games/break-block/index.html",
+    "thumbnail": "assets/img/game-break-block.svg",
+    "category": "Arcade"
+  }
+]

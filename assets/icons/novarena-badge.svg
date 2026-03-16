@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 96 96" role="img" aria-labelledby="title desc">
+  <title id="title">Novarena</title>
+  <desc id="desc">Logo geometric per al portal Novarena.</desc>
+  <defs>
+    <linearGradient id="grad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#7bf1a8"/>
+      <stop offset="100%" stop-color="#68d8ff"/>
+    </linearGradient>
+  </defs>
+  <rect width="96" height="96" rx="24" fill="#0b1628"/>
+  <path d="M24 72V24h10l28 31V24h10v48H62L34 41v31H24Z" fill="url(#grad)"/>
+</svg>

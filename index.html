@@ -1,0 +1,602 @@
+﻿<!DOCTYPE html>
+<html lang="ca">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Novarena - Juga. Competeix. Puja al ranking.</title>
+  <meta name="description" content="Novarena es un portal de jocs pensat per entrar, triar partida i jugar en segons.">
+  <link rel="stylesheet" href="assets/css/site.css">
+  <script src="assets/js/i18n.js" defer></script>
+  <script src="assets/js/site.js" defer></script>
+  <style>
+    .home-main {
+      position: relative;
+      z-index: 1;
+      padding-bottom: 88px;
+      overflow: hidden;
+    }
+
+    .home-main::before,
+    .home-main::after {
+      content: '';
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      z-index: -1;
+    }
+
+    .home-main::before {
+      inset: -12%;
+      background:
+        radial-gradient(circle at 14% 16%, rgba(6,182,212,.16) 0%, transparent 24%),
+        radial-gradient(circle at 82% 18%, rgba(168,85,247,.18) 0%, transparent 28%),
+        radial-gradient(circle at 52% 78%, rgba(244,63,94,.12) 0%, transparent 26%);
+      filter: blur(34px);
+    }
+
+    .home-main::after {
+      background:
+        linear-gradient(rgba(255,255,255,.04) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255,255,255,.04) 1px, transparent 1px);
+      background-size: 96px 96px;
+      mask-image: radial-gradient(circle at center, rgba(0,0,0,.96) 0%, rgba(0,0,0,.72) 50%, transparent 88%);
+      opacity: .16;
+    }
+
+    .home-shell {
+      width: min(calc(100% - 32px), 1200px);
+      margin: 0 auto;
+    }
+
+    .hero-play {
+      position: relative;
+      overflow: hidden;
+      display: grid;
+      grid-template-columns: minmax(0, 1.15fr) minmax(300px, .85fr);
+      gap: 20px;
+      padding: 32px;
+      border-radius: 34px;
+      border: 1px solid var(--border);
+      background: linear-gradient(180deg, rgba(255,255,255,.06), rgba(255,255,255,.03));
+      backdrop-filter: blur(18px);
+      box-shadow: 0 24px 60px rgba(0,0,0,.3);
+    }
+
+    .hero-play::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(135deg, rgba(255,255,255,.08), transparent 42%, transparent 100%);
+      pointer-events: none;
+    }
+
+    .hero-copy,
+    .hero-side {
+      position: relative;
+      z-index: 1;
+    }
+
+    .eyebrow {
+      margin: 0 0 12px;
+      color: var(--purple);
+      font-size: 11px;
+      letter-spacing: .3em;
+      text-transform: uppercase;
+      font-weight: 700;
+    }
+
+    .hero-title {
+      margin: 0 0 16px;
+      font-family: 'Orbitron', sans-serif;
+      font-size: clamp(38px, 6vw, 74px);
+      line-height: .95;
+      letter-spacing: -.04em;
+    }
+
+    .hero-title span {
+      background: linear-gradient(90deg, var(--purple), var(--cyan), var(--rose));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .hero-tagline {
+      margin: 0;
+      color: var(--muted);
+      font-size: 18px;
+      line-height: 1.55;
+      max-width: 620px;
+    }
+
+    .hero-actions,
+    .cta-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      margin-top: 24px;
+    }
+
+    .button,
+    .section-link {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-width: 170px;
+      padding: 14px 20px;
+      border-radius: 999px;
+      border: 1px solid rgba(255,255,255,.12);
+      text-decoration: none;
+      font-size: 12px;
+      letter-spacing: .16em;
+      text-transform: uppercase;
+      font-family: 'Orbitron', sans-serif;
+    }
+
+    .button-primary {
+      background: linear-gradient(135deg, var(--violet), var(--purple));
+      box-shadow: 0 0 24px rgba(124,58,237,.35);
+    }
+
+    .button-secondary,
+    .section-link {
+      background: rgba(255,255,255,.04);
+    }
+
+    .hero-stats {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-top: 18px;
+    }
+
+    .hero-stat {
+      padding: 10px 14px;
+      border-radius: 999px;
+      border: 1px solid rgba(255,255,255,.08);
+      background: rgba(255,255,255,.04);
+      color: var(--muted);
+      font-size: 12px;
+      text-transform: uppercase;
+      letter-spacing: .12em;
+    }
+
+    .hero-side {
+      display: grid;
+      gap: 14px;
+    }
+
+    .jump-card,
+    .pulse-card,
+    .top-players-card,
+    .activity-card,
+    .cta-panel,
+    .featured-card {
+      border-radius: 28px;
+      border: 1px solid var(--border);
+      background: linear-gradient(180deg, rgba(255,255,255,.05), rgba(255,255,255,.025));
+      backdrop-filter: blur(16px);
+      box-shadow: 0 20px 50px rgba(0,0,0,.28);
+    }
+
+    .pulse-card,
+    .jump-card,
+    .top-players-card,
+    .activity-card,
+    .cta-panel {
+      padding: 24px;
+    }
+
+    .pulse-card h3,
+    .jump-card h3,
+    .featured-card h3,
+    .top-players-card h2,
+    .activity-card h2,
+    .cta-panel h2 {
+      margin: 0 0 10px;
+      font-family: 'Orbitron', sans-serif;
+    }
+
+    .pulse-card p,
+    .jump-card p,
+    .activity-card p,
+    .cta-panel p {
+      margin: 0;
+      color: var(--muted);
+      line-height: 1.7;
+    }
+
+    .jump-list,
+    .activity-stack,
+    .top-players-list {
+      display: grid;
+      gap: 12px;
+      margin-top: 16px;
+    }
+
+    .jump-row,
+    .activity-item,
+    .top-player-card {
+      display: grid;
+      gap: 14px;
+      padding: 14px 16px;
+      border-radius: 18px;
+      background: rgba(255,255,255,.04);
+      border: 1px solid rgba(255,255,255,.06);
+    }
+
+    .jump-row {
+      grid-template-columns: minmax(0, 1fr) auto;
+      align-items: center;
+    }
+
+    .jump-row a {
+      text-decoration: none;
+      color: #fff;
+      font-size: 11px;
+      letter-spacing: .14em;
+      text-transform: uppercase;
+      font-family: 'Orbitron', sans-serif;
+    }
+
+    .section-shell {
+      width: min(calc(100% - 32px), 1200px);
+      margin: 0 auto;
+      padding-top: 28px;
+    }
+
+    .section-head {
+      display: flex;
+      align-items: flex-end;
+      justify-content: space-between;
+      gap: 16px;
+      margin-bottom: 18px;
+    }
+
+    .section-head h2 {
+      margin: 0;
+      font-family: 'Orbitron', sans-serif;
+      font-size: clamp(24px, 4vw, 38px);
+    }
+
+    .featured-grid {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 18px;
+    }
+
+    .featured-card {
+      overflow: hidden;
+      text-decoration: none;
+      color: inherit;
+      transition: transform .2s ease, border-color .2s ease, box-shadow .2s ease;
+    }
+
+    .featured-card:hover {
+      transform: translateY(-4px);
+      border-color: rgba(168,85,247,.28);
+      box-shadow: 0 24px 60px rgba(0,0,0,.34);
+    }
+
+    .featured-card img {
+      width: 100%;
+      aspect-ratio: 16 / 9;
+      object-fit: cover;
+      display: block;
+    }
+
+    .featured-body {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      padding: 18px;
+    }
+
+    .featured-body p {
+      margin: 0;
+      color: var(--muted);
+      line-height: 1.65;
+    }
+
+    .featured-cta {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      align-self: flex-start;
+      padding: 12px 16px;
+      border-radius: 999px;
+      background: linear-gradient(135deg, var(--violet), var(--purple));
+      color: #fff;
+      font-family: 'Orbitron', sans-serif;
+      font-size: 11px;
+      letter-spacing: .14em;
+      text-transform: uppercase;
+      box-shadow: 0 0 24px rgba(124,58,237,.24);
+    }
+
+    .split-grid {
+      display: grid;
+      grid-template-columns: minmax(0, 1.05fr) minmax(0, .95fr);
+      gap: 20px;
+    }
+
+    .top-player-card {
+      grid-template-columns: auto minmax(0, 1fr) auto;
+      align-items: center;
+    }
+
+    .top-player-rank,
+    .top-player-score {
+      font-family: 'Orbitron', sans-serif;
+      font-size: 18px;
+    }
+
+    .top-player-rank {
+      color: var(--gold);
+    }
+
+    .top-player-body h3 {
+      margin: 0 0 4px;
+      font-size: 16px;
+    }
+
+    .top-player-body p {
+      margin: 0;
+      color: var(--muted);
+      line-height: 1.5;
+    }
+
+    .activity-item strong {
+      display: block;
+      margin-bottom: 6px;
+      font-size: 15px;
+    }
+
+    .activity-meta {
+      color: var(--cyan);
+      font-size: 12px;
+      text-transform: uppercase;
+      letter-spacing: .12em;
+    }
+
+    .cta-panel {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 18px;
+    }
+
+    .home-footer {
+      width: min(calc(100% - 32px), 1200px);
+      margin: 0 auto;
+      display: flex;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 12px;
+      padding-top: 28px;
+      color: var(--muted);
+    }
+
+    @media (max-width: 1120px) {
+      .featured-grid,
+      .split-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+    }
+
+    @media (max-width: 920px) {
+      .hero-play,
+      .cta-panel {
+        grid-template-columns: 1fr;
+        flex-direction: column;
+        align-items: flex-start;
+      }
+    }
+
+    @media (max-width: 720px) {
+      .featured-grid,
+      .split-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .hero-play,
+      .pulse-card,
+      .jump-card,
+      .top-players-card,
+      .activity-card,
+      .cta-panel {
+        padding: 20px;
+      }
+
+      .section-head,
+      .home-footer {
+        flex-direction: column;
+        align-items: flex-start;
+      }
+
+      .hero-actions a,
+      .cta-actions a,
+      .section-link {
+        width: 100%;
+      }
+    }
+  </style>
+</head>
+<body>
+  <main class="home-main">
+    <header class="site-header">
+      <a class="brand" href="index.html" data-i18n="aria.backHome" data-i18n-attr="aria-label">
+        <img class="brand-mark" src="assets/icons/novarena-badge.svg" alt="">
+        <span class="brand-copy">
+          <strong>Novarena</strong>
+          <small data-i18n="brand.home">Portal de jocs</small>
+        </span>
+      </a>
+      <div class="site-header-actions">
+        <nav class="site-nav" data-i18n="aria.nav" data-i18n-attr="aria-label">
+          <a href="index.html" aria-current="page" data-i18n="nav.home">Home</a>
+          <a href="games.html" data-i18n="nav.games">Jocs</a>
+          <a href="leaderboard.html" data-i18n="nav.leaderboard">Leaderboard</a>
+          <a href="profile.html" data-i18n="nav.profile">Profile</a>
+          <a href="community.html" data-i18n="nav.community">Community</a>
+        </nav>
+        <div class="lang-switcher" data-language-switcher>
+          <button class="lang-option" type="button" data-lang="ca">CA</button>
+          <button class="lang-option" type="button" data-lang="es">ES</button>
+          <button class="lang-option" type="button" data-lang="en">EN</button>
+          <button class="lang-option" type="button" data-lang="it">IT</button>
+        </div>
+      </div>
+    </header>
+
+    <section class="home-shell">
+      <div class="hero-play">
+        <div class="hero-copy">
+          <p class="eyebrow">Novarena</p>
+          <h1 class="hero-title"><span data-i18n="home.hero.title">Juga. Competeix.</span> <span data-i18n="home.hero.accent">Puja al ranking.</span></h1>
+          <p class="hero-tagline" data-i18n="home.hero.tagline">Tria joc, entra en partida i torna per superar la teva millor marca.</p>
+          <div class="hero-actions">
+            <a class="button button-primary" href="games.html" data-i18n="common.playNow">Jugar ara</a>
+            <a class="button button-secondary" href="games.html" data-i18n="common.viewAllGames">Veure tots els jocs</a>
+          </div>
+          <div class="hero-stats">
+            <span class="hero-stat"><span data-game-count>0</span> <span data-i18n="home.hero.gamesSuffix">jocs</span></span>
+            <span class="hero-stat" data-i18n="home.hero.statRecords">Records actius</span>
+            <span class="hero-stat" data-i18n="home.hero.statArcade">Arcade modern</span>
+          </div>
+        </div>
+
+        <aside class="hero-side">
+          <article class="pulse-card">
+            <h3 data-i18n="home.pulse.title">Entra i juga en segons</h3>
+            <p data-i18n="home.pulse.body">Classics, reflexos i ritme arcade des de la portada, sense donar voltes.</p>
+          </article>
+
+          <article class="jump-card">
+            <p class="eyebrow" data-i18n="home.jump.eyebrow">Salta directe</p>
+            <h3 data-i18n="home.jump.title">Obre un joc ara mateix</h3>
+            <div class="jump-list">
+              <div class="jump-row">
+                <span>Tetris</span>
+                <a href="games/tetris/index.html" data-i18n="common.play">Jugar</a>
+              </div>
+              <div class="jump-row">
+                <span>Snake</span>
+                <a href="games/snake/index.html" data-i18n="common.play">Jugar</a>
+              </div>
+              <div class="jump-row">
+                <span>Runner 3D</span>
+                <a href="games/runner-3d/index.html" data-i18n="common.play">Jugar</a>
+              </div>
+              <div class="jump-row">
+                <span>Break Block</span>
+                <a href="games/break-block/index.html" data-i18n="common.play">Jugar</a>
+              </div>
+            </div>
+          </article>
+        </aside>
+      </div>
+    </section>
+
+    <section class="section-shell">
+      <div class="section-head">
+        <div>
+          <p class="eyebrow" data-i18n="home.featured.eyebrow">Jocs destacats</p>
+          <h2 data-i18n="home.featured.title">Comenca per aqui</h2>
+        </div>
+        <a class="section-link" href="games.html" data-i18n="common.viewAllGames">Veure tots els jocs</a>
+      </div>
+
+      <div class="featured-grid">
+        <a class="featured-card" href="games/tetris/index.html">
+          <img src="assets/img/game-tetris.svg" alt="Tetris">
+          <div class="featured-body">
+            <h3>Tetris</h3>
+            <p data-i18n="home.featuredCards.tetris">El classic de peces i reflexos per entrar a l'arena des del primer segon.</p>
+            <span class="featured-cta" data-i18n="common.play">Jugar</span>
+          </div>
+        </a>
+
+        <a class="featured-card" href="games/snake/index.html">
+          <img src="assets/img/game-snake.svg" alt="Snake">
+          <div class="featured-body">
+            <h3>Snake</h3>
+            <p data-i18n="home.featuredCards.snake">Ritme, memoria i precisio en una partida rapida que sempre demana una altra.</p>
+            <span class="featured-cta" data-i18n="common.play">Jugar</span>
+          </div>
+        </a>
+
+        <a class="featured-card" href="games/runner-3d/index.html">
+          <img src="assets/img/game-runner.svg" alt="Runner 3D">
+          <div class="featured-body">
+            <h3>Runner 3D</h3>
+            <p data-i18n="home.featuredCards.runner3d">Velocitat neon i obstacles constants per qui vol sensacio de cursa immediata.</p>
+            <span class="featured-cta" data-i18n="common.play">Jugar</span>
+          </div>
+        </a>
+
+        <a class="featured-card" href="games/break-block/index.html">
+          <img src="assets/img/game-break-block.svg" alt="Break Block">
+          <div class="featured-body">
+            <h3>Break Block</h3>
+            <p data-i18n="home.featuredCards.break-block">Arcade directe, rebot addictiu i ganes de netejar la pantalla una vegada mes.</p>
+            <span class="featured-cta" data-i18n="common.play">Jugar</span>
+          </div>
+        </a>
+      </div>
+    </section>
+
+    <section class="section-shell">
+      <div class="split-grid">
+        <article class="top-players-card">
+          <p class="eyebrow" data-i18n="home.top.eyebrow">Top players</p>
+          <h2 data-i18n="home.top.title">Els 5 que marquen el ritme</h2>
+          <div class="top-players-list" data-top-players>
+            <p class="loading-state" data-i18n="common.loadingTopPlayers">Carregant top players...</p>
+          </div>
+        </article>
+
+        <article class="activity-card">
+          <p class="eyebrow" data-i18n="home.activity.eyebrow">Activitat</p>
+          <h2 data-i18n="home.activity.title">Novetats de Novarena</h2>
+          <div class="activity-stack">
+            <div class="activity-item">
+              <strong data-i18n="home.activity.runner.title">Runner 3D arriba a Novarena</strong>
+              <p data-i18n="home.activity.runner.body">La pista neon ja forma part del cataleg i dona mes velocitat a la plataforma.</p>
+              <div class="activity-meta" data-i18n="home.activity.runner.meta">Nou destacat</div>
+            </div>
+            <div class="activity-item">
+              <strong data-i18n="home.activity.snake.title">Snake continua dominant el ranking</strong>
+              <p data-i18n="home.activity.snake.body">El classic segueix sent un dels punts d'entrada mes forts per a sessions rapides.</p>
+              <div class="activity-meta" data-i18n="home.activity.snake.meta">Ara mateix</div>
+            </div>
+            <div class="activity-item">
+              <strong data-i18n="home.activity.breakblock.title">Break Block es el joc mes addictiu</strong>
+              <p data-i18n="home.activity.breakblock.body">Una vegada entres, es facil acabar dient una altra partida i prou.</p>
+              <div class="activity-meta" data-i18n="home.activity.breakblock.meta">Favorit arcade</div>
+            </div>
+          </div>
+        </article>
+      </div>
+    </section>
+
+    <section class="section-shell">
+      <div class="cta-panel">
+        <div>
+          <p class="eyebrow" data-i18n="home.final.eyebrow">Entra a l'arena</p>
+          <h2 data-i18n="home.final.title">Tot preparat per jugar i competir.</h2>
+          <p data-i18n="home.final.body">Explora el cataleg complet o mira el leaderboard per veure qui esta dominant Novarena.</p>
+        </div>
+        <div class="cta-actions">
+          <a class="button button-primary" href="games.html" data-i18n="common.viewAllGames">Veure tots els jocs</a>
+          <a class="button button-secondary" href="leaderboard.html" data-i18n="common.openLeaderboard">Obrir leaderboard</a>
+        </div>
+      </div>
+    </section>
+
+    <footer class="home-footer">
+      <p>Novarena <span data-current-year></span></p>
+      <p data-i18n="home.footer">Una home pensada per comencar a jugar en menys de 3 segons.</p>
+    </footer>
+  </main>
+</body>
+</html>

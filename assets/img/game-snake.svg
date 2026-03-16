@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1280 720">
+  <defs><linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#08111f"/><stop offset="100%" stop-color="#14552b"/></linearGradient></defs>
+  <rect width="1280" height="720" fill="url(#bg)"/>
+  <g fill="none" stroke="#7bf1a8" stroke-linecap="round" stroke-width="44" opacity="0.75"><path d="M210 240h270v130H340v120h380v-140h220"/></g>
+  <circle cx="960" cy="350" r="26" fill="#edf5ff"/>
+  <circle cx="972" cy="344" r="6" fill="#08111f"/>
+  <text x="120" y="600" fill="#edf5ff" font-family="Arial, sans-serif" font-size="112" font-weight="700">SNAKE</text>
+</svg>

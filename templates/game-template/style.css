@@ -1,0 +1,35 @@
+﻿body {
+  margin: 0;
+  min-height: 100vh;
+  display: grid;
+  place-items: center;
+  background: #06071c;
+  color: #e2e8f0;
+  font-family: Arial, sans-serif;
+}
+
+.game-shell {
+  width: min(100% - 32px, 720px);
+  padding: 24px;
+  border-radius: 20px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(255, 255, 255, 0.04);
+}
+
+button {
+  margin-right: 12px;
+  padding: 10px 16px;
+  border: 0;
+  border-radius: 999px;
+  background: #7c3aed;
+  color: #fff;
+  cursor: pointer;
+}
+
+pre {
+  margin-top: 20px;
+  padding: 16px;
+  border-radius: 14px;
+  background: rgba(0, 0, 0, 0.28);
+  overflow: auto;
+}

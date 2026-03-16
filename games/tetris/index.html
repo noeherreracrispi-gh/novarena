@@ -1,0 +1,1173 @@
+<!doctype html>
+<html lang="ca">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>TETRIS</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Share+Tech+Mono&display=swap');
+
+    :root {
+      --cyan:   #00ffff;
+      --pink:   #ff00aa;
+      --purple: #aa00ff;
+      --yellow: #ffee00;
+      --bg:     #020209;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      background: var(--bg);
+      display: flex; justify-content: center; align-items: center;
+      min-height: 100vh; overflow: hidden;
+      font-family: 'Orbitron', sans-serif;
+      transition: background 0.4s;
+    }
+    body.natural { background: #0a1308; }
+    body.matrix { background: #090102; }
+
+    body::after {
+      content: ''; position: fixed; inset: 0;
+      background: repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(0,0,0,0.08) 2px, rgba(0,0,0,0.08) 4px);
+      pointer-events: none; z-index: 999; transition: opacity 0.4s;
+    }
+    body.classic::after { opacity: 0; }
+    body.natural::after { opacity: 0; }
+    body.matrix::after {
+      opacity: 1;
+      background:
+        repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(255,50,50,0.05) 2px, rgba(255,50,50,0.05) 4px),
+        linear-gradient(180deg, rgba(255,40,70,0.03), rgba(0,0,0,0.12));
+    }
+
+    #stars { position: fixed; inset: 0; z-index: 0; pointer-events: none; transition: opacity 0.4s; }
+    body.classic #stars { opacity: 0; }
+    body.natural #stars { opacity: 0; }
+    body.matrix #stars { opacity: 1; }
+
+    /* Plants canvas — behind shell (z-index:1) but above stars */
+    #plants { position: fixed; inset: 0; z-index: 0; pointer-events: none; }
+
+    #shell { position: relative; z-index: 1; display: flex; gap: 20px; align-items: flex-start; }
+    #board-wrap { position: relative; }
+    #garbage-warning {
+      position: absolute; left: 10px; right: 10px; top: 10px; z-index: 9;
+      padding: 8px 10px; border: 1px solid rgba(255,90,110,0.45);
+      background: linear-gradient(180deg, rgba(40,0,6,0.88), rgba(12,0,2,0.68));
+      box-shadow: 0 0 18px rgba(255,60,80,0.18);
+      opacity: 0; transform: translateY(-8px); pointer-events: none;
+      transition: opacity 0.18s ease, transform 0.18s ease;
+    }
+    #garbage-warning.visible { opacity: 1; transform: translateY(0); }
+    #garbage-warning-text {
+      display: block; margin-bottom: 6px;
+      font-family: 'Share Tech Mono', monospace; font-size: 10px; letter-spacing: 3px;
+      color: #ffb0b8; text-align: center; text-transform: uppercase;
+      text-shadow: 0 0 10px rgba(255,70,90,0.55);
+    }
+    #garbage-hole-track {
+      display: grid; grid-template-columns: repeat(10, 1fr); gap: 4px;
+    }
+    .garbage-cell {
+      height: 7px; border: 1px solid rgba(255,120,135,0.25);
+      background: rgba(255,50,70,0.12);
+      transition: background 0.18s ease, box-shadow 0.18s ease, transform 0.18s ease;
+    }
+    .garbage-cell.safe {
+      background: rgba(255,240,240,0.85);
+      box-shadow: 0 0 10px rgba(255,240,240,0.75);
+      transform: scaleY(1.15);
+    }
+
+    #board {
+      display: block;
+      border: 1px solid rgba(0,255,255,0.3);
+      box-shadow: 0 0 0 1px rgba(0,255,255,0.1), 0 0 20px rgba(0,255,255,0.2), 0 0 60px rgba(0,255,255,0.08), inset 0 0 40px rgba(0,0,30,0.8);
+      image-rendering: pixelated; transition: border-color 0.4s, box-shadow 0.4s;
+    }
+    body.classic #board { border: 3px solid #888; box-shadow: 4px 4px 0 #000; }
+    body.natural #board { border: 2px solid #4a7a3a; box-shadow: 3px 3px 0 #0d1a08, 0 0 14px rgba(60,120,30,0.4); }
+    body.matrix #board { border: 1px solid rgba(255,90,110,0.55); box-shadow: 0 0 0 1px rgba(255,90,110,0.12), 0 0 26px rgba(255,60,80,0.22), 0 0 60px rgba(255,30,60,0.08), inset 0 0 48px rgba(35,0,6,0.9); }
+
+    .corner { position: absolute; width: 16px; height: 16px; border-color: var(--cyan); border-style: solid; z-index: 2; transition: opacity 0.4s; }
+    .corner.tl { top:-2px; left:-2px;   border-width: 2px 0 0 2px; }
+    .corner.tr { top:-2px; right:-2px;  border-width: 2px 2px 0 0; }
+    .corner.bl { bottom:-2px; left:-2px;  border-width: 0 0 2px 2px; }
+    .corner.br { bottom:-2px; right:-2px; border-width: 0 2px 2px 0; }
+    body.classic .corner { opacity: 0; }
+    body.natural .corner { opacity: 0; }
+    body.matrix .corner { opacity: 1; border-color: #ff5a72; }
+
+    #sidebar { display: flex; flex-direction: column; gap: 14px; width: 140px; }
+
+    .hud-panel {
+      border: 1px solid rgba(0,255,255,0.25); background: rgba(0,10,30,0.8);
+      padding: 10px 14px; position: relative; overflow: hidden;
+    }
+    body.classic .hud-panel { border: 2px solid #555; background: #111; }
+    body.natural .hud-panel { border: 2px solid #4a7a3a; background: rgba(8,20,5,0.92); }
+    body.matrix .hud-panel { border: 1px solid rgba(255,90,110,0.28); background: rgba(22,0,4,0.9); }
+
+    .hud-panel::before {
+      content: ''; position: absolute; top: 0; left: 0; right: 0; height: 1px;
+      background: linear-gradient(90deg, transparent, var(--cyan), transparent);
+      animation: scanH 3s linear infinite;
+    }
+    body.classic .hud-panel::before { opacity: 0; }
+    body.natural .hud-panel::before { opacity: 0; }
+    body.matrix .hud-panel::before { background: linear-gradient(90deg, transparent, #ff5a72, transparent); }
+    @keyframes scanH { from{transform:translateX(-100%)} to{transform:translateX(100%)} }
+
+    .hud-label { font-size: 9px; letter-spacing: 3px; color: rgba(0,255,255,0.5); text-transform: uppercase; margin-bottom: 4px; }
+    body.classic .hud-label { color: #888; font-family: monospace; }
+    body.natural .hud-label { color: #7aaa5a; font-family: monospace; }
+    body.matrix .hud-label { color: rgba(255,150,160,0.58); font-family: 'Share Tech Mono', monospace; }
+
+    .hud-value { font-size: 20px; font-weight: 900; color: var(--cyan); text-shadow: 0 0 10px var(--cyan), 0 0 20px var(--cyan); font-family: 'Share Tech Mono', monospace; letter-spacing: 2px; }
+    body.classic .hud-value { color: #fff; text-shadow: none; font-family: monospace; }
+    body.natural .hud-value { color: #a8d870; text-shadow: none; font-family: monospace; }
+    body.matrix .hud-value { color: #ff8a96; text-shadow: 0 0 10px rgba(255,70,90,0.7); font-family: 'Share Tech Mono', monospace; }
+
+    #next-wrap { border: 1px solid rgba(0,255,255,0.25); background: rgba(0,10,30,0.8); padding: 10px; }
+    body.classic #next-wrap { border: 2px solid #555; background: #111; }
+    body.natural #next-wrap { border: 2px solid #4a7a3a; background: rgba(8,20,5,0.92); }
+    body.matrix #next-wrap { border: 1px solid rgba(255,90,110,0.28); background: rgba(22,0,4,0.9); }
+
+    #next-label { font-size: 9px; letter-spacing: 3px; color: rgba(0,255,255,0.5); text-transform: uppercase; margin-bottom: 8px; }
+    body.classic #next-label { color: #888; font-family: monospace; }
+    body.natural #next-label { color: #7aaa5a; font-family: monospace; }
+    body.matrix #next-label { color: rgba(255,150,160,0.58); font-family: 'Share Tech Mono', monospace; }
+    #next-canvas { display: block; margin: 0 auto; }
+
+    .bar-bg { height: 6px; background: rgba(0,255,255,0.1); border: 1px solid rgba(0,255,255,0.2); margin-top: 8px; }
+    body.classic .bar-bg { background: #222; border-color: #555; }
+    body.natural .bar-bg { background: #0d1a08; border-color: #4a7a3a; }
+    body.matrix .bar-bg { background: rgba(30,0,5,0.9); border-color: rgba(255,90,110,0.22); }
+
+    .bar-fill { height: 100%; background: linear-gradient(90deg, var(--purple), var(--cyan)); box-shadow: 0 0 8px var(--cyan); transition: width 0.3s ease; }
+    body.classic .bar-fill { background: #aaa; box-shadow: none; }
+    body.natural .bar-fill { background: linear-gradient(90deg, #4a7a1a, #a8d870); box-shadow: none; }
+    body.matrix .bar-fill { background: linear-gradient(90deg, #ff2020, #ff8a8a); box-shadow: 0 0 10px rgba(255,70,90,0.6); }
+
+    #overlay {
+      position: fixed; inset: 0; display: flex; flex-direction: column;
+      justify-content: center; align-items: center; gap: 16px; z-index: 100;
+      background: radial-gradient(ellipse at center, rgba(0,10,40,0.95) 0%, rgba(2,2,9,0.98) 100%);
+    }
+    body.classic #overlay { background: #000; }
+    body.natural #overlay { background: radial-gradient(ellipse at center, rgba(5,20,3,0.97) 0%, rgba(8,15,5,0.99) 100%); }
+    body.matrix #overlay { background: radial-gradient(ellipse at center, rgba(40,0,8,0.96) 0%, rgba(7,0,1,0.99) 100%); }
+
+    #overlay-title {
+      font-size: 64px; font-weight: 900; letter-spacing: 8px;
+      background: linear-gradient(135deg, var(--cyan) 0%, var(--purple) 50%, var(--pink) 100%);
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+      filter: drop-shadow(0 0 20px rgba(0,255,255,0.6)); animation: pulse 2s ease-in-out infinite;
+    }
+    body.classic #overlay-title { font-family: monospace; background: none; -webkit-text-fill-color: #fff; color: #fff; filter: none; animation: none; text-shadow: 4px 4px 0 #333; font-size: 56px; }
+    body.natural #overlay-title { background: none; -webkit-text-fill-color: #7acf50; color: #7acf50; filter: none; animation: none; text-shadow: 3px 3px 0 #2a5018; font-size: 60px; }
+    body.matrix #overlay-title { background: none; -webkit-text-fill-color: #ff8a96; color: #ff8a96; filter: none; animation: none; text-shadow: 0 0 12px rgba(255,70,90,0.85), 0 0 28px rgba(180,30,50,0.55); font-size: 58px; font-family: 'Share Tech Mono', monospace; }
+    @keyframes pulse { 0%,100%{filter:drop-shadow(0 0 20px rgba(0,255,255,0.6))} 50%{filter:drop-shadow(0 0 40px rgba(170,0,255,0.8))} }
+
+    #overlay-sub { font-family: 'Share Tech Mono', monospace; font-size: 12px; letter-spacing: 6px; color: rgba(0,255,255,0.5); }
+    body.classic #overlay-sub { font-family: monospace; color: #666; letter-spacing: 3px; }
+    body.natural #overlay-sub { font-family: monospace; color: #5a8a40; letter-spacing: 3px; }
+    body.matrix #overlay-sub { color: rgba(255,150,160,0.58); letter-spacing: 4px; }
+
+    #style-selector { display: flex; gap: 0; margin: 4px 0; border: 1px solid rgba(0,255,255,0.3); }
+    body.classic #style-selector { border-color: #555; }
+    body.natural #style-selector { border-color: #4a7a3a; }
+    body.matrix #style-selector { border-color: rgba(255,90,110,0.3); }
+
+    .style-btn { padding: 8px 18px; font-family: 'Orbitron', sans-serif; font-size: 10px; font-weight: 700; letter-spacing: 2px; text-transform: uppercase; background: transparent; color: rgba(0,255,255,0.4); border: none; cursor: pointer; transition: all 0.2s; }
+    .style-btn + .style-btn { border-left: 1px solid rgba(0,255,255,0.3); }
+    .style-btn.active { background: rgba(0,255,255,0.12); color: var(--cyan); text-shadow: 0 0 8px var(--cyan); }
+    .style-btn:not(.active):hover { color: rgba(0,255,255,0.7); }
+    body.classic .style-btn { font-family: monospace; color: #555; }
+    body.classic .style-btn + .style-btn { border-left-color: #555; }
+    body.classic .style-btn.active { background: #333; color: #fff; text-shadow: none; }
+    body.classic .style-btn:not(.active):hover { color: #aaa; }
+    body.natural .style-btn { font-family: monospace; color: #4a7a3a; }
+    body.natural .style-btn + .style-btn { border-left-color: #4a7a3a; }
+    body.natural .style-btn.active { background: rgba(80,130,40,0.2); color: #a8d870; text-shadow: none; }
+    body.natural .style-btn:not(.active):hover { color: #7aaa5a; }
+    body.matrix .style-btn { font-family: 'Share Tech Mono', monospace; color: rgba(255,150,160,0.5); }
+    body.matrix .style-btn + .style-btn { border-left-color: rgba(255,90,110,0.3); }
+    body.matrix .style-btn.active { background: rgba(255,70,90,0.14); color: #ff8a96; text-shadow: 0 0 8px rgba(255,70,90,0.7); }
+    body.matrix .style-btn:not(.active):hover { color: rgba(255,180,190,0.8); }
+
+    .gameover-score { font-size: 14px; color: var(--pink); letter-spacing: 3px; text-shadow: 0 0 10px var(--pink); }
+    body.classic .gameover-score { color: #aaa; text-shadow: none; font-family: monospace; }
+    body.natural .gameover-score { color: #c8a440; text-shadow: none; font-family: monospace; }
+    body.matrix .gameover-score { color: #ff8a96; text-shadow: 0 0 10px rgba(255,70,90,0.6); font-family: 'Share Tech Mono', monospace; }
+
+    #start-btn {
+      margin-top: 4px; padding: 14px 40px; font-family: 'Orbitron', sans-serif;
+      font-size: 14px; font-weight: 700; letter-spacing: 4px; text-transform: uppercase;
+      background: transparent; color: var(--cyan); border: 1px solid var(--cyan);
+      cursor: pointer; position: relative; overflow: hidden; transition: color 0.2s, border-color 0.4s;
+    }
+    #start-btn::before { content: ''; position: absolute; inset: 0; background: var(--cyan); transform: translateX(-100%); transition: transform 0.2s ease; z-index: -1; }
+    #start-btn:hover { color: var(--bg); }
+    #start-btn:hover::before { transform: translateX(0); }
+    body.classic #start-btn { font-family: monospace; color: #fff; border-color: #777; }
+    body.classic #start-btn::before { background: #555; }
+    body.classic #start-btn:hover { color: #fff; }
+    body.natural #start-btn { font-family: monospace; color: #7acf50; border-color: #4a7a3a; }
+    body.natural #start-btn::before { background: #4a7a3a; }
+    body.natural #start-btn:hover { color: #fff; }
+    body.matrix #start-btn { font-family: 'Share Tech Mono', monospace; color: #ff8a96; border-color: rgba(255,90,110,0.5); }
+    body.matrix #start-btn::before { background: #ff314e; }
+    body.matrix #start-btn:hover { color: #140203; }
+
+    .controls-grid { display: grid; grid-template-columns: auto auto; gap: 4px 16px; font-family: 'Share Tech Mono', monospace; font-size: 11px; color: rgba(255,255,255,0.4); }
+    body.classic .controls-grid { font-family: monospace; color: #555; }
+    body.natural .controls-grid { font-family: monospace; color: #4a6a38; }
+    .controls-grid .key { color: rgba(0,255,255,0.7); }
+    body.classic .controls-grid .key { color: #888; }
+    body.natural .controls-grid .key { color: #7aaa5a; }
+    body.matrix .controls-grid { font-family: 'Share Tech Mono', monospace; color: rgba(255,150,160,0.5); }
+    body.matrix .controls-grid .key { color: #ff8a96; }
+
+    #pause-btn {
+      width: 100%; padding: 10px 0; font-family: 'Orbitron', sans-serif;
+      font-size: 11px; font-weight: 700; letter-spacing: 3px; text-transform: uppercase;
+      background: transparent; color: rgba(0,255,255,0.6); border: 1px solid rgba(0,255,255,0.3);
+      cursor: pointer; display: none; align-items: center; justify-content: center; gap: 8px; transition: all 0.2s;
+    }
+    #pause-btn:hover { color: var(--cyan); border-color: var(--cyan); background: rgba(0,255,255,0.08); text-shadow: 0 0 8px var(--cyan); }
+    #pause-btn.active { color: var(--pink); border-color: var(--pink); background: rgba(255,0,170,0.08); text-shadow: 0 0 8px var(--pink); }
+    #pause-btn.visible { display: flex; }
+    body.classic #pause-btn { font-family: monospace; color: #888; border-color: #555; }
+    body.classic #pause-btn:hover { color: #fff; border-color: #aaa; background: #222; text-shadow: none; }
+    body.classic #pause-btn.active { color: #fff; border-color: #aaa; background: #333; text-shadow: none; }
+    body.natural #pause-btn { font-family: monospace; color: #5a8a40; border-color: #4a7a3a; }
+    body.natural #pause-btn:hover { color: #a8d870; border-color: #7aaa5a; background: rgba(60,100,20,0.2); text-shadow: none; }
+    body.natural #pause-btn.active { color: #c8d850; border-color: #8aaa30; background: rgba(80,120,10,0.2); text-shadow: none; }
+    body.matrix #pause-btn { font-family: 'Share Tech Mono', monospace; color: rgba(255,150,160,0.68); border-color: rgba(255,90,110,0.3); }
+    body.matrix #pause-btn:hover { color: #ff8a96; border-color: #ff5a72; background: rgba(255,40,70,0.08); text-shadow: 0 0 8px rgba(255,70,90,0.6); }
+    body.matrix #pause-btn.active { color: #ffd0d0; border-color: #ff9aa6; background: rgba(255,100,120,0.12); text-shadow: 0 0 8px rgba(255,130,145,0.65); }
+
+    #pause-overlay { position: absolute; inset: 0; display: none; flex-direction: column; justify-content: center; align-items: center; gap: 20px; z-index: 10; background: rgba(2,2,20,0.82); backdrop-filter: blur(3px); }
+    #pause-overlay.visible { display: flex; }
+    body.classic #pause-overlay { background: rgba(0,0,0,0.80); backdrop-filter: none; }
+    body.natural #pause-overlay { background: rgba(5,15,3,0.87); backdrop-filter: blur(2px); }
+    body.matrix #pause-overlay { background: rgba(18,0,4,0.86); backdrop-filter: blur(2px); }
+
+    #pause-overlay .pause-title { font-size: 38px; font-weight: 900; letter-spacing: 8px; color: var(--cyan); text-shadow: 0 0 20px var(--cyan), 0 0 40px var(--cyan); animation: pausePulse 1.4s ease-in-out infinite; }
+    body.classic #pause-overlay .pause-title { font-family: monospace; color: #fff; text-shadow: 3px 3px 0 #333; animation: none; }
+    body.natural #pause-overlay .pause-title { font-family: monospace; color: #7acf50; text-shadow: 2px 2px 0 #2a5018; animation: none; }
+    body.matrix #pause-overlay .pause-title { font-family: 'Share Tech Mono', monospace; color: #ff8a96; text-shadow: 0 0 12px rgba(255,70,90,0.7); animation: none; }
+    @keyframes pausePulse { 0%,100%{opacity:1} 50%{opacity:0.5} }
+
+    #pause-overlay .pause-hint { font-family: 'Share Tech Mono', monospace; font-size: 10px; letter-spacing: 4px; color: rgba(0,255,255,0.4); }
+    body.classic #pause-overlay .pause-hint { font-family: monospace; color: #555; }
+    body.natural #pause-overlay .pause-hint { font-family: monospace; color: #4a7a3a; }
+    body.matrix #pause-overlay .pause-hint { font-family: 'Share Tech Mono', monospace; color: rgba(255,150,160,0.52); }
+
+    #resume-btn { padding: 12px 32px; font-family: 'Orbitron', sans-serif; font-size: 12px; font-weight: 700; letter-spacing: 4px; text-transform: uppercase; background: transparent; color: var(--cyan); border: 1px solid var(--cyan); cursor: pointer; position: relative; overflow: hidden; transition: color 0.2s; }
+    #resume-btn::before { content: ''; position: absolute; inset: 0; background: var(--cyan); transform: translateX(-100%); transition: transform 0.2s ease; z-index: -1; }
+    #resume-btn:hover { color: var(--bg); }
+    #resume-btn:hover::before { transform: translateX(0); }
+    body.classic #resume-btn { font-family: monospace; color: #fff; border-color: #777; }
+    body.classic #resume-btn::before { background: #555; }
+    body.classic #resume-btn:hover { color: #fff; }
+    body.natural #resume-btn { font-family: monospace; color: #7acf50; border-color: #4a7a3a; }
+    body.natural #resume-btn::before { background: #4a7a3a; }
+    body.natural #resume-btn:hover { color: #fff; }
+    body.matrix #resume-btn { font-family: 'Share Tech Mono', monospace; color: #ff8a96; border-color: rgba(255,90,110,0.45); }
+    body.matrix #resume-btn::before { background: #ff314e; }
+    body.matrix #resume-btn:hover { color: #140203; }
+
+    #quit-btn { padding: 10px 32px; font-family: 'Orbitron', sans-serif; font-size: 11px; font-weight: 700; letter-spacing: 3px; text-transform: uppercase; background: transparent; color: rgba(255,0,170,0.6); border: 1px solid rgba(255,0,170,0.4); cursor: pointer; position: relative; overflow: hidden; transition: color 0.2s, border-color 0.2s; }
+    #quit-btn::before { content: ''; position: absolute; inset: 0; background: var(--pink); transform: translateX(-100%); transition: transform 0.2s ease; z-index: -1; }
+    #quit-btn:hover { color: #fff; border-color: var(--pink); }
+    #quit-btn:hover::before { transform: translateX(0); }
+    body.classic #quit-btn { font-family: monospace; color: #888; border-color: #555; }
+    body.classic #quit-btn:hover { color: #fff; border-color: #aaa; }
+    body.classic #quit-btn::before { background: #444; }
+    body.natural #quit-btn { font-family: monospace; color: #8a6a3a; border-color: #6a4a20; }
+    body.natural #quit-btn:hover { color: #fff; border-color: #b08040; }
+    body.natural #quit-btn::before { background: #6a4a20; }
+    body.matrix #quit-btn { font-family: 'Share Tech Mono', monospace; color: rgba(255,170,170,0.7); border-color: rgba(255,110,120,0.3); }
+    body.matrix #quit-btn:hover { color: #140203; border-color: #ffb0b8; }
+    body.matrix #quit-btn::before { background: #ff7a88; }
+
+    #particles { position:fixed; inset:0; pointer-events:none; z-index:50; }
+
+    #combo { position:fixed; left:50%; top:40%; transform:translateX(-50%); font-size:28px; font-weight:900; letter-spacing:4px; color:var(--yellow); text-shadow:0 0 20px var(--yellow),0 0 40px var(--yellow); pointer-events:none; z-index:200; opacity:0; }
+    body.classic #combo { font-family:monospace; text-shadow:2px 2px 0 #000; }
+    body.natural #combo { font-family:monospace; text-shadow:2px 2px 0 #000; }
+    body.matrix #combo { font-family:'Share Tech Mono', monospace; color:#ff8a96; text-shadow:0 0 18px rgba(255,70,90,0.75); }
+  </style>
+</head>
+<body>
+
+<canvas id="stars"></canvas>
+<canvas id="plants"></canvas>
+<canvas id="particles"></canvas>
+<div id="combo"></div>
+
+<div id="overlay">
+  <div id="overlay-title">TETRIS</div>
+  <div id="overlay-sub">// FUTURISTA //</div>
+  <div class="gameover-score" id="gameover-score" style="display:none"></div>
+  <div id="style-selector">
+    <button class="style-btn active" data-style="futurista">🔮 Futurista</button>
+    <button class="style-btn" data-style="classic">🕹 Clàssic</button>
+    <button class="style-btn" data-style="natural">🌿 Natural</button>
+    <button class="style-btn" data-style="matrix">Extra-dificil</button>
+  </div>
+  <button id="start-btn">INICIAR</button>
+  <div class="controls-grid">
+    <span class="key">← →</span><span>Moure</span>
+    <span class="key">↑</span><span>Rotar</span>
+    <span class="key">↓</span><span>Baixar</span>
+    <span class="key">ESPAI</span><span>Drop ràpid</span>
+    <span class="key">P</span><span>Pausa</span>
+  </div>
+</div>
+
+<div id="shell">
+  <div id="board-wrap">
+    <div class="corner tl"></div><div class="corner tr"></div>
+    <div class="corner bl"></div><div class="corner br"></div>
+    <canvas id="board" width="280" height="560"></canvas>
+    <div id="garbage-warning">
+      <span id="garbage-warning-text">incoming row</span>
+      <div id="garbage-hole-track"></div>
+    </div>
+    <div id="pause-overlay">
+      <div class="pause-title">PAUSA</div>
+      <div class="pause-hint" id="pause-hint">// sistema aturat //</div>
+      <button id="resume-btn">▶ Continuar</button>
+      <button id="quit-btn">✕ Sortir del joc</button>
+    </div>
+  </div>
+  <div id="sidebar">
+    <div class="hud-panel"><div class="hud-label">Score</div><div class="hud-value" id="score">0</div></div>
+    <div class="hud-panel"><div class="hud-label">Lines</div><div class="hud-value" id="lines">0</div></div>
+    <div class="hud-panel">
+      <div class="hud-label">Level</div><div class="hud-value" id="level">01</div>
+      <div class="bar-bg"><div class="bar-fill" id="level-bar" style="width:0%"></div></div>
+    </div>
+    <div id="next-wrap"><div id="next-label">Next</div><canvas id="next-canvas" width="100" height="100"></canvas></div>
+    <button id="pause-btn">⏸ Pausa</button>
+  </div>
+</div>
+
+<script>
+// ════════════════════════════════════════════════
+//  UTILS
+// ════════════════════════════════════════════════
+function srand(n) {
+  const x = Math.sin(n * 127.1 + 311.7) * 43758.5453;
+  return x - Math.floor(x);
+}
+
+// ════════════════════════════════════════════════
+//  STYLE
+// ════════════════════════════════════════════════
+let gameStyle = 'futurista';
+const THEME_UI = {
+  futurista: { className: '', overlaySub: '// FUTURISTA //', pauseHint: '// sistema aturat //', comboGlow: true },
+  classic: { className: 'classic', overlaySub: '--- EDICIO CLASSICA ---', pauseHint: '--- joc pausat ---', comboGlow: false },
+  natural: { className: 'natural', overlaySub: '~ EDICIO NATURAL ~', pauseHint: '~ descans ~', comboGlow: false },
+  matrix: { className: 'matrix', overlaySub: '>>> EXTRA-DIFICIL // MATRIX <<<', pauseHint: '[[ senyal suspes ]]', comboGlow: true }
+};
+
+function currentThemeUI(){ return THEME_UI[gameStyle] || THEME_UI.futurista; }
+
+function applyStyle(){
+  const theme = currentThemeUI();
+  document.body.className = '';
+  if (theme.className) document.body.classList.add(theme.className);
+  document.getElementById('overlay-sub').textContent = theme.overlaySub;
+  if (gameStyle === 'natural') generateVines();
+}
+
+document.querySelectorAll('.style-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    gameStyle = btn.dataset.style;
+    document.querySelectorAll('.style-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    applyStyle();
+  });
+});
+
+// ════════════════════════════════════════════════
+//  STARS
+// ════════════════════════════════════════════════
+(function(){
+  const c = document.getElementById('stars');
+  const cx = c.getContext('2d');
+  let stars = [];
+  let columns = [];
+  const matrixChars = '01ABCDEFGHIJKLMNOPQRSTUVWXYZ#$%&*+-<>[]{}';
+
+  function resizeBackdrop(){
+    c.width = window.innerWidth; c.height = window.innerHeight;
+    stars = Array.from({length:200}, ()=>({ x:Math.random()*c.width, y:Math.random()*c.height, r:Math.random()*1.2+0.2, speed:Math.random()*0.3+0.05, alpha:Math.random() }));
+    columns = Array.from({length:Math.ceil(c.width/18)}, ()=>Math.random()*c.height/18);
+  }
+
+  function animStars(){
+    if(gameStyle === 'matrix'){
+      cx.fillStyle = 'rgba(14,0,2,0.18)';
+      cx.fillRect(0,0,c.width,c.height);
+      cx.font = '16px Share Tech Mono';
+      cx.textBaseline = 'top';
+      for(let i=0;i<columns.length;i++){
+        const char = matrixChars[Math.floor(Math.random()*matrixChars.length)];
+        const x = i * 18;
+        const y = columns[i] * 18;
+        cx.fillStyle = i % 7 === 0 ? 'rgba(255,220,220,0.9)' : 'rgba(255,90,90,0.72)';
+        cx.fillText(char, x, y);
+        if (y > c.height && Math.random() > 0.97) columns[i] = 0;
+        else columns[i] += 0.18 + (i % 3) * 0.05;
+      }
+    } else {
+      cx.clearRect(0,0,c.width,c.height);
+      for(const s of stars){
+        s.alpha += (Math.random()-0.5)*0.02; s.alpha = Math.max(0.05,Math.min(1,s.alpha));
+        s.y += s.speed; if(s.y>c.height){ s.y=0; s.x=Math.random()*c.width; }
+        cx.beginPath(); cx.arc(s.x,s.y,s.r,0,Math.PI*2); cx.fillStyle=`rgba(150,200,255,${s.alpha})`; cx.fill();
+      }
+    }
+    requestAnimationFrame(animStars);
+  }
+  resizeBackdrop();
+  window.addEventListener('resize', resizeBackdrop);
+  animStars();
+})();
+
+// ════════════════════════════════════════════════
+//  AUDIO
+// ════════════════════════════════════════════════
+const AudioCtx = window.AudioContext || window.webkitAudioContext;
+let audioCtx;
+function getAudio(){ if(!audioCtx) audioCtx = new AudioCtx(); return audioCtx; }
+function playTone(freq,type='sine',dur=0.1,vol=0.15,delay=0){
+  try{const ac=getAudio(),o=ac.createOscillator(),g=ac.createGain(); o.connect(g); g.connect(ac.destination); o.type=type; o.frequency.value=freq; const t=ac.currentTime+delay; g.gain.setValueAtTime(vol,t); g.gain.exponentialRampToValueAtTime(0.001,t+dur); o.start(t); o.stop(t+dur);}catch(e){}
+}
+function sfxMove()  { playTone(220,'square',0.05,0.06); }
+function sfxRotate(){ playTone(440,'square',0.07,0.08); }
+function sfxLand()  { playTone(110,'sawtooth',0.12,0.1); }
+function sfxLine(n) { [523,659,784,1047].forEach((f,i)=>{ if(i<n) playTone(f,'square',0.18,0.15,i*0.06); }); }
+function sfxDrop()  { playTone(880,'sine',0.05,0.1); playTone(440,'sine',0.1,0.08,0.05); }
+function sfxOver()  { [440,392,349,294,262].forEach((f,i)=>playTone(f,'sawtooth',0.25,0.15,i*0.12)); }
+
+// ════════════════════════════════════════════════
+//  PARTICLES
+// ════════════════════════════════════════════════
+const pCanvas=document.getElementById('particles');
+const pCtx=pCanvas.getContext('2d');
+pCanvas.width=window.innerWidth; pCanvas.height=window.innerHeight;
+const particles=[];
+
+function spawnLineParticles(row,color){
+  if(gameStyle!=='futurista' && gameStyle!=='matrix') return;
+  const rect=document.getElementById('board').getBoundingClientRect();
+  const y=rect.top+row*BLOCK+BLOCK/2;
+  for(let i=0;i<60;i++) particles.push({ x:rect.left+Math.random()*rect.width, y:y+(Math.random()-0.5)*10, vx:(Math.random()-0.5)*8, vy:(Math.random()-0.5)*6-2, life:1, decay:Math.random()*0.02+0.015, r:Math.random()*4+1, color });
+}
+function updateParticles(){
+  pCtx.clearRect(0,0,pCanvas.width,pCanvas.height);
+  for(let i=particles.length-1;i>=0;i--){
+    const p=particles[i]; p.x+=p.vx; p.y+=p.vy; p.vy+=0.15; p.life-=p.decay;
+    if(p.life<=0){particles.splice(i,1);continue;}
+    pCtx.globalAlpha=p.life; pCtx.fillStyle=p.color; pCtx.shadowBlur=8; pCtx.shadowColor=p.color;
+    pCtx.beginPath(); pCtx.arc(p.x,p.y,p.r,0,Math.PI*2); pCtx.fill(); pCtx.shadowBlur=0;
+  }
+  pCtx.globalAlpha=1;
+}
+
+// ════════════════════════════════════════════════
+//  PLANTS  (Natural style)
+// ════════════════════════════════════════════════
+const plantCanvas = document.getElementById('plants');
+const plantCtx = plantCanvas.getContext('2d');
+plantCanvas.width = window.innerWidth;
+plantCanvas.height = window.innerHeight;
+
+let plantTime = 0;
+let vines = [];
+
+function generateVines() {
+  vines = [];
+  const brd = document.getElementById('board').getBoundingClientRect();
+  const bH = brd.bottom - brd.top;
+
+  function makeVine(baseX, hFactor, tOff) {
+    const n = 30, segs = [];
+    const totalH = bH * hFactor;
+    const isLeft = baseX < (brd.left + brd.right) / 2;
+    for (let i = 0; i <= n; i++) {
+      const t = i / n;
+      const dist = Math.abs(baseX - (isLeft ? brd.left : brd.right));
+      const swAmp = 7 + dist * 0.13;
+      const x = baseX + Math.sin(t * Math.PI * 2.8 + tOff) * swAmp;
+      const y = brd.bottom + 28 - t * totalH;
+      const seed = i * 41 + Math.round(baseX * 0.07) * 13;
+      const hl = i > 3 && i % 3 === 0;
+      segs.push({
+        x, y, hl,
+        lSz:  hl ? 5 + srand(seed)     * 10 : 0,
+        lAng: hl ? srand(seed+1) * Math.PI * 2 : 0,
+        lH:   hl ? 92 + Math.floor(srand(seed+2) * 28) : 0,
+        lL:   hl ? 25 + Math.floor(srand(seed+3) * 15) : 0,
+        swO:  srand(seed+4) * Math.PI * 2,
+        swS:  0.5 + srand(seed+5) * 0.7,
+      });
+    }
+    return { segs, tOff, sw: 1.2 + srand(Math.round(baseX * 0.1)) * 1.8 };
+  }
+
+  // Left vines (4 stems at various distances from board edge)
+  [brd.left-90, brd.left-58, brd.left-30, brd.left-9].forEach((x, i) =>
+    vines.push(makeVine(x, 1.05 + i*0.08, i * 0.9))
+  );
+  // Right vines: 2 in the gap/edge + 2 past the sidebar
+  [brd.right+6, brd.right+20, brd.right+168, brd.right+195].forEach((x, i) =>
+    vines.push(makeVine(x, 1.0 + i*0.07, (i+4) * 0.75))
+  );
+
+  // Ground tufts below the board
+  for (let i = 0; i < 12; i++) {
+    const gx = brd.left - 100 + i * 35;
+    const gy = brd.bottom + 8 + srand(i * 17) * 18;
+    const seed = i * 200;
+    const numB = 3 + Math.floor(srand(seed) * 3);
+    vines.push({ ground: true, gx, gy, numB, seed });
+  }
+}
+
+function drawLeafShape(ctx, x, y, ang, sz, h, l) {
+  ctx.save();
+  ctx.translate(x, y); ctx.rotate(ang);
+  ctx.beginPath();
+  ctx.moveTo(0, 0);
+  ctx.bezierCurveTo(sz*0.35, -sz*0.62, sz*0.95, -sz*0.27, sz*1.08, 0);
+  ctx.bezierCurveTo(sz*0.95, sz*0.27, sz*0.35, sz*0.62, 0, 0);
+  ctx.fillStyle = `hsl(${h},58%,${l}%)`;
+  ctx.fill();
+  ctx.beginPath(); ctx.moveTo(1, 0); ctx.lineTo(sz*0.82, 0);
+  ctx.strokeStyle = `hsla(${h+5},38%,${l-8}%,0.4)`;
+  ctx.lineWidth = 0.7; ctx.stroke();
+  ctx.restore();
+}
+
+function drawGroundTuft(ctx, gx, gy, numB, seed, t) {
+  for (let b = 0; b < numB; b++) {
+    const ang = -Math.PI/2 + (srand(seed+b*3+1)-0.5)*1.2;
+    const len = 10 + srand(seed+b*3+2) * 18;
+    const sway = Math.sin(t * (0.6+srand(seed+b*3+3)*0.5) + srand(seed+b*3+4)*Math.PI*2) * 3;
+    const tipX = gx + Math.cos(ang) * len + sway;
+    const tipY = gy + Math.sin(ang) * len;
+    ctx.beginPath(); ctx.moveTo(gx, gy); ctx.lineTo(tipX, tipY);
+    const h = 95 + Math.floor(srand(seed+b*3+5) * 25);
+    const l = 22 + Math.floor(srand(seed+b*3+6) * 12);
+    ctx.strokeStyle = `hsl(${h},60%,${l}%)`; ctx.lineWidth = 1.5; ctx.lineCap = 'round'; ctx.stroke();
+    // small leaf at tip
+    if (srand(seed+b*3+7) > 0.4) {
+      const lSz = 4 + srand(seed+b*3+8) * 5;
+      drawLeafShape(ctx, tipX, tipY, ang + (srand(seed+b*3+9)-0.5)*0.8, lSz, h, l);
+    }
+  }
+}
+
+function drawPlants() {
+  plantCtx.clearRect(0, 0, plantCanvas.width, plantCanvas.height);
+  if (gameStyle !== 'natural') return;
+  plantTime += 0.016;
+
+  for (const vine of vines) {
+    if (vine.ground) {
+      drawGroundTuft(plantCtx, vine.gx, vine.gy, vine.numB, vine.seed, plantTime);
+      continue;
+    }
+    const s = vine.segs;
+    // Stem
+    plantCtx.beginPath();
+    plantCtx.moveTo(s[0].x, s[0].y);
+    for (let i = 1; i < s.length; i++) {
+      const sw = Math.sin(plantTime * s[i].swS + vine.tOff + i * 0.28) * 2.8;
+      plantCtx.lineTo(s[i].x + sw, s[i].y);
+    }
+    plantCtx.strokeStyle = '#3d5c1a'; plantCtx.lineWidth = vine.sw;
+    plantCtx.lineCap = 'round'; plantCtx.lineJoin = 'round'; plantCtx.stroke();
+    // Leaves
+    for (let i = 0; i < s.length; i++) {
+      if (!s[i].hl) continue;
+      const sw = Math.sin(plantTime * s[i].swS + vine.tOff + i * 0.28) * 2.8;
+      const angSw = Math.sin(plantTime * 0.95 + s[i].swO) * 0.2;
+      drawLeafShape(plantCtx, s[i].x + sw, s[i].y, s[i].lAng + angSw, s[i].lSz, s[i].lH, s[i].lL);
+    }
+  }
+}
+
+(function plantLoop() { drawPlants(); requestAnimationFrame(plantLoop); })();
+
+window.addEventListener('resize', () => {
+  plantCanvas.width = window.innerWidth; plantCanvas.height = window.innerHeight;
+  if (gameStyle === 'natural' && vines.length) generateVines();
+});
+
+// ════════════════════════════════════════════════
+//  COMBO
+// ════════════════════════════════════════════════
+function showCombo(text, color='#ffee00'){
+  const el=document.getElementById('combo');
+  const theme = currentThemeUI();
+  el.textContent=text; el.style.color=color;
+  el.style.textShadow = theme.comboGlow ? `0 0 20px ${color},0 0 40px ${color}` : `2px 2px 0 #000`;
+  el.style.opacity='1'; el.style.transform='translateX(-50%) scale(1.3)'; el.style.transition='none';
+  setTimeout(()=>{ el.style.transition='opacity 0.8s ease,transform 0.8s ease'; el.style.opacity='0'; el.style.transform='translateX(-50%) scale(0.8) translateY(-30px)'; },50);
+}
+
+// ════════════════════════════════════════════════
+//  TETRIS ENGINE
+// ════════════════════════════════════════════════
+const COLS=10, ROWS=20, BLOCK=28;
+const canvas=document.getElementById('board');
+const ctx=canvas.getContext('2d');
+const nextCanvas=document.getElementById('next-canvas');
+const nctx=nextCanvas.getContext('2d');
+
+const PALETTE_FUTURISTA=[null,['#00ffff','#00ffff'],['#ffaa00','#ffaa00'],['#cc00ff','#cc00ff'],['#00ff88','#00ff88'],['#ff2244','#ff2244'],['#4488ff','#4488ff'],['#ffee00','#ffee00']];
+const PALETTE_CLASSIC=[null,['#00aeef','#66d4f8','#005f88'],['#f7d308','#fae96a','#9a8500'],['#9b59b6','#c490d8','#5b2e7a'],['#27ae60','#6fcf97','#145a32'],['#e74c3c','#f1948a','#922b21'],['#2980b9','#7fb3d3','#1a4f72'],['#e67e22','#f0b27a','#935116']];
+const PALETTE_NATURAL=[null,['#3a9a5a','#6aca8a','#1a5a3a'],['#c8a440','#dcc070','#8a6a10'],['#8a6a3a','#b09060','#5a4010'],['#6a9a3a','#9ac060','#3a6a10'],['#b06a3a','#d09060','#703010'],['#3a7aaa','#6aaad0','#1a4a7a'],['#9aaa3a','#c0d060','#6a7a10']];
+const PALETTE_MATRIX=[null,['#ff5c74','#ffd8dc'],['#ff3d57','#ffe1e5'],['#ff7a7a','#ffe0e0'],['#ff2448','#ffd0d8'],['#ff9090','#fff0f0'],['#d91f3a','#ffd8df'],['#ffb0b0','#fff3f3']];
+
+const PIECES=[null,[[1,1,1,1]],[[2,2],[2,2]],[[0,3,0],[3,3,3]],[[0,4,4],[4,4,0]],[[5,5,0],[0,5,5]],[[6,0,0],[6,6,6]],[[0,0,7],[7,7,7]]];
+const MATRIX_START_LEVEL = 5;
+const THEMES = {
+  futurista: {
+    palette: PALETTE_FUTURISTA,
+    nextBg: '#020209',
+    startLevel: 1,
+    dropInterval(level){ return Math.max(80, 800-(level-1)*70); },
+    garbageDelay(){ return Infinity; },
+    lineParticles(cleared){ return cleared===4 ? '#ff00aa' : '#00ffff'; },
+    comboColors: ['','#00ffff','#00ff88','#ffee00','#ff00aa']
+  },
+  classic: {
+    palette: PALETTE_CLASSIC,
+    nextBg: '#1a1a1a',
+    startLevel: 1,
+    dropInterval(level){ return Math.max(80, 800-(level-1)*70); },
+    garbageDelay(){ return Infinity; },
+    lineParticles(cleared){ return cleared===4 ? '#ff6666' : '#ffffff'; },
+    comboColors: ['','#fff','#aaffaa','#ffee00','#ff6666']
+  },
+  natural: {
+    palette: PALETTE_NATURAL,
+    nextBg: '#0d150a',
+    startLevel: 1,
+    dropInterval(level){ return Math.max(80, 800-(level-1)*70); },
+    garbageDelay(){ return Infinity; },
+    lineParticles(cleared){ return cleared===4 ? '#e88840' : '#a8d870'; },
+    comboColors: ['','#a8d870','#c8d840','#c8a440','#e88840']
+  },
+  matrix: {
+    palette: PALETTE_MATRIX,
+    nextBg: '#090102',
+    startLevel: MATRIX_START_LEVEL,
+    dropInterval(level){ return Math.max(55, 310-(level-1)*16); },
+    garbageDelay(level){ return Math.max(2400, 7200-(level-1)*240); },
+    lineParticles(cleared){ return cleared===4 ? '#ffd8dc' : '#ff5a72'; },
+    comboColors: ['','#ff8a96','#ffb0b0','#ffd8dc','#fff3f3']
+  }
+};
+
+let board, score, lines, level, piece, px, py, nextPiece, loop, paused, dead, startLevel;
+let flashRows=[], shakeTimer=0, time=0;
+let garbageClock = 0, garbageWarnAt = 0, garbageHole = 4, lastGarbageHole = 4, garbageWarningActive = false;
+
+function currentTheme(){ return THEMES[gameStyle] || THEMES.futurista; }
+function isMatrixMode(){ return gameStyle === 'matrix'; }
+function getStartLevel(){ return currentTheme().startLevel; }
+function getDropInterval(){ return currentTheme().dropInterval(level); }
+function resetDropLoop(){ clearInterval(loop); loop=setInterval(tick,getDropInterval()); }
+function matrixGarbageDelay(){ return currentTheme().garbageDelay(level); }
+function syncActivePieceAfterGarbage(){
+  while(!fits(piece.shape,px,py) && py>-piece.shape.length-3) py--;
+  if(!fits(piece.shape,px,py)) die();
+}
+function pickGarbageHole(){
+  const delta = Math.floor(Math.random()*5) - 2;
+  garbageHole = Math.max(0, Math.min(COLS-1, lastGarbageHole + delta));
+  lastGarbageHole = garbageHole;
+  return garbageHole;
+}
+function updateGarbageWarningUI(){
+  const el = document.getElementById('garbage-warning');
+  const track = document.getElementById('garbage-hole-track');
+  const text = document.getElementById('garbage-warning-text');
+  if(!track.childElementCount){
+    for(let i=0;i<COLS;i++){
+      const cell = document.createElement('span');
+      cell.className = 'garbage-cell';
+      track.appendChild(cell);
+    }
+  }
+  Array.from(track.children).forEach((cell, i) => cell.classList.toggle('safe', i === garbageHole));
+  if(isMatrixMode() && !dead){
+    const secs = Math.max(0, (garbageClock - performance.now()) / 1000);
+    text.textContent = garbageWarningActive ? `FILA BROSSA EN ${secs.toFixed(1)}s` : 'SEGUENT FILA BROSSA';
+  } else {
+    text.textContent = 'incoming row';
+  }
+  el.classList.toggle('visible', isMatrixMode() && garbageWarningActive && !dead && !paused);
+}
+function scheduleNextGarbage(baseDelay = matrixGarbageDelay()){
+  if(!isMatrixMode()) return;
+  const now = performance.now();
+  garbageClock = now + baseDelay;
+  garbageWarnAt = garbageClock - Math.min(1500, baseDelay * 0.42);
+  garbageWarningActive = false;
+  pickGarbageHole();
+  updateGarbageWarningUI();
+}
+function injectGarbageRow(){
+  if(!isMatrixMode() || dead) return;
+  if(board[0].some(Boolean)){ die(); return; }
+  const hole = garbageHole;
+  const row=Array.from({length:COLS},(_,i)=>i===hole?0:(Math.floor(Math.random()*7)+1));
+  board.shift(); board.push(row);
+  syncActivePieceAfterGarbage();
+  showCombo('CORRUPTED','#ff8a96');
+}
+
+function newBoard(){ return Array.from({length:ROWS},()=>Array(COLS).fill(0)); }
+function randPiece(){ const id=Math.floor(Math.random()*7)+1; return {id,shape:PIECES[id].map(r=>[...r])}; }
+function rotate(shape){ const rows=shape.length,cols=shape[0].length,r=Array.from({length:cols},()=>Array(rows).fill(0)); for(let i=0;i<rows;i++) for(let j=0;j<cols;j++) r[j][rows-1-i]=shape[i][j]; return r; }
+function fits(shape,x,y){ for(let r=0;r<shape.length;r++) for(let c=0;c<shape[r].length;c++) if(shape[r][c]){ const nx=x+c,ny=y+r; if(nx<0||nx>=COLS||ny>=ROWS) return false; if(ny>=0&&board[ny][nx]) return false; } return true; }
+
+function place(){
+  for(let r=0;r<piece.shape.length;r++) for(let c=0;c<piece.shape[r].length;c++) if(piece.shape[r][c]){ if(py+r<0){die();return;} board[py+r][px+c]=piece.id; }
+  sfxLand(); doLines();
+  piece=nextPiece; nextPiece=randPiece();
+  px=Math.floor((COLS-piece.shape[0].length)/2); py=-piece.shape.length;
+  drawNext();
+  if(!fits(piece.shape,px,py+1)&&!fits(piece.shape,px,py)) die();
+}
+
+function doLines(){
+  const theme = currentTheme();
+  const cleared=[];
+  for(let r=ROWS-1;r>=0;r--) if(board[r].every(c=>c!==0)) cleared.push(r);
+  if(!cleared.length) return;
+  flashRows=[...cleared];
+  if(gameStyle==='futurista') shakeTimer=12;
+  if(gameStyle==='matrix') shakeTimer=8;
+  sfxLine(cleared.length);
+  const partColor=theme.lineParticles(cleared.length);
+  cleared.forEach(r=>spawnLineParticles(r,partColor));
+  const labels=['','SINGLE','DOUBLE','TRIPLE','TETRIS!!!'];
+  const cc = theme.comboColors;
+  showCombo(labels[cleared.length], cc[cleared.length]);
+  setTimeout(()=>{
+    cleared.sort((a,b)=>b-a);
+    for(const r of cleared){board.splice(r,1);board.unshift(Array(COLS).fill(0));}
+    const pts=[0,100,300,500,800][cleared.length]*level;
+    score+=pts; lines+=cleared.length; level=startLevel + Math.floor(lines/10);
+    if(isMatrixMode()) scheduleNextGarbage(Math.max(1600, matrixGarbageDelay() + cleared.length * 420));
+    document.getElementById('score').textContent=score;
+    document.getElementById('lines').textContent=lines;
+    document.getElementById('level').textContent=String(level).padStart(2,'0');
+    document.getElementById('level-bar').style.width=((lines%10)*10)+'%';
+    resetDropLoop();
+    flashRows=[];
+  },120);
+}
+
+function die(){
+  dead=true; clearInterval(loop); sfxOver(); setPaused(false);
+  garbageWarningActive = false;
+  updateGarbageWarningUI();
+  document.getElementById('pause-btn').classList.remove('visible');
+  document.getElementById('gameover-score').textContent='PUNTUACIÓ: '+score;
+  document.getElementById('gameover-score').style.display='block';
+  document.getElementById('overlay-title').textContent='GAME OVER';
+  document.getElementById('start-btn').textContent='TORNAR A JUGAR';
+  document.getElementById('overlay').style.display='flex';
+}
+
+function ghostY(){ let g=py; while(fits(piece.shape,px,g+1)) g++; return g; }
+
+// ─── DRAW FUTURISTA ───
+function drawBlockFuturista(ctx2,x,y,id,alpha=1,glow=true){
+  if(!id) return;
+  const [col,glowCol]=PALETTE_FUTURISTA[id];
+  ctx2.globalAlpha=alpha;
+  if(glow){ctx2.shadowBlur=18;ctx2.shadowColor=glowCol;}
+  const grd=ctx2.createLinearGradient(x*BLOCK,y*BLOCK,x*BLOCK,(y+1)*BLOCK);
+  grd.addColorStop(0,'rgba(255,255,255,0.25)'); grd.addColorStop(1,'rgba(0,0,0,0.2)');
+  ctx2.fillStyle=col; ctx2.fillRect(x*BLOCK+1,y*BLOCK+1,BLOCK-2,BLOCK-2);
+  ctx2.fillStyle=grd; ctx2.fillRect(x*BLOCK+1,y*BLOCK+1,BLOCK-2,BLOCK-2);
+  ctx2.strokeStyle='rgba(255,255,255,0.35)'; ctx2.lineWidth=0.5;
+  ctx2.strokeRect(x*BLOCK+1.5,y*BLOCK+1.5,BLOCK-3,BLOCK-3);
+  ctx2.shadowBlur=0; ctx2.globalAlpha=1;
+}
+
+// ─── DRAW CLASSIC ───
+function drawBlockClassic(ctx2,x,y,id,alpha=1){
+  if(!id) return;
+  const [col,hi,sh]=PALETTE_CLASSIC[id];
+  const bx=x*BLOCK,by=y*BLOCK;
+  ctx2.globalAlpha=alpha;
+  ctx2.fillStyle=col; ctx2.fillRect(bx+1,by+1,BLOCK-2,BLOCK-2);
+  ctx2.fillStyle=hi; ctx2.fillRect(bx+1,by+1,BLOCK-2,3); ctx2.fillRect(bx+1,by+1,3,BLOCK-2);
+  ctx2.fillStyle=sh; ctx2.fillRect(bx+1,by+BLOCK-4,BLOCK-2,3); ctx2.fillRect(bx+BLOCK-4,by+1,3,BLOCK-2);
+  ctx2.globalAlpha=1;
+}
+
+// ─── DRAW NATURAL (amb eura) ───
+function drawBlockNatural(ctx2,x,y,id,alpha=1){
+  if(!id) return;
+  const [col,hi,sh]=PALETTE_NATURAL[id];
+  const bx=x*BLOCK, by=y*BLOCK;
+  ctx2.globalAlpha=alpha;
+  // Base
+  ctx2.fillStyle=col; ctx2.fillRect(bx+1,by+1,BLOCK-2,BLOCK-2);
+  // Wood grain
+  const grd=ctx2.createLinearGradient(bx,by,bx+BLOCK,by+BLOCK);
+  grd.addColorStop(0,'rgba(255,255,255,0.1)'); grd.addColorStop(0.5,'rgba(255,255,255,0)'); grd.addColorStop(1,'rgba(0,0,0,0.1)');
+  ctx2.fillStyle=grd; ctx2.fillRect(bx+1,by+1,BLOCK-2,BLOCK-2);
+  // Highlight/shadow
+  ctx2.fillStyle=hi; ctx2.fillRect(bx+1,by+1,BLOCK-2,3); ctx2.fillRect(bx+1,by+1,3,BLOCK-2);
+  ctx2.fillStyle=sh; ctx2.fillRect(bx+1,by+BLOCK-4,BLOCK-2,3); ctx2.fillRect(bx+BLOCK-4,by+1,3,BLOCK-2);
+  ctx2.strokeStyle='rgba(0,0,0,0.35)'; ctx2.lineWidth=1;
+  ctx2.strokeRect(bx+1,by+1,BLOCK-2,BLOCK-2);
+
+  // ── Eura / ivy leaves ──
+  const seed = id * 137 + x * 31 + y * 17;
+  const nLeaves = srand(seed) > 0.42 ? 2 : 1;
+  for (let i = 0; i < nLeaves; i++) {
+    const lx  = bx + 3 + srand(seed+i*7+1) * (BLOCK - 9);
+    const ly  = by + 3 + srand(seed+i*7+2) * (BLOCK - 9);
+    const ang = srand(seed+i*7+3) * Math.PI * 2;
+    const sz  = 3 + srand(seed+i*7+4) * 5.5;
+    const h   = 90 + Math.floor(srand(seed+i*7+5) * 35);
+    const l   = 26 + Math.floor(srand(seed+i*7+6) * 14);
+    ctx2.save();
+    ctx2.translate(lx, ly); ctx2.rotate(ang);
+    ctx2.beginPath();
+    ctx2.moveTo(0, 0);
+    ctx2.bezierCurveTo(sz*0.35, -sz*0.62, sz*0.95, -sz*0.27, sz*1.08, 0);
+    ctx2.bezierCurveTo(sz*0.95, sz*0.27, sz*0.35, sz*0.62, 0, 0);
+    ctx2.fillStyle = `hsl(${h},62%,${l}%)`;
+    ctx2.fill();
+    // mini vein
+    ctx2.beginPath(); ctx2.moveTo(0,0); ctx2.lineTo(sz*0.75, 0);
+    ctx2.strokeStyle = `hsla(${h+5},35%,${l-9}%,0.4)`; ctx2.lineWidth = 0.6; ctx2.stroke();
+    ctx2.restore();
+  }
+  ctx2.globalAlpha=1;
+}
+
+// ─── DRAW ───
+function drawBlockMatrix(ctx2,x,y,id,alpha=1,glow=true){
+  if(!id) return;
+  const [col,glowCol]=PALETTE_MATRIX[id];
+  const bx=x*BLOCK, by=y*BLOCK;
+  ctx2.globalAlpha=alpha;
+  if(glow){ctx2.shadowBlur=10;ctx2.shadowColor=glowCol;}
+  ctx2.fillStyle='rgba(34,2,6,0.96)';
+  ctx2.fillRect(bx+1,by+1,BLOCK-2,BLOCK-2);
+  const grd=ctx2.createLinearGradient(bx,by,bx,by+BLOCK);
+  grd.addColorStop(0,'rgba(255,220,220,0.22)');
+  grd.addColorStop(0.35,col);
+  grd.addColorStop(1,'rgba(80,0,12,0.9)');
+  ctx2.fillStyle=grd;
+  ctx2.fillRect(bx+2,by+2,BLOCK-4,BLOCK-4);
+  ctx2.strokeStyle='rgba(255,190,190,0.35)';
+  ctx2.lineWidth=0.8;
+  ctx2.strokeRect(bx+2.5,by+2.5,BLOCK-5,BLOCK-5);
+  ctx2.fillStyle='rgba(255,230,230,0.78)';
+  ctx2.font='11px Share Tech Mono';
+  ctx2.textAlign='center';
+  ctx2.textBaseline='middle';
+  ctx2.fillText((id%2===0?'0':'1'), bx + BLOCK/2, by + BLOCK/2 + 1);
+  ctx2.shadowBlur=0;
+  ctx2.globalAlpha=1;
+}
+
+function drawGhostBlock(ctx2,x,y,color,style){
+  const bx = x * BLOCK;
+  const by = y * BLOCK;
+  ctx2.save();
+
+  if(style === 'futurista'){
+    ctx2.globalAlpha = 0.26;
+    ctx2.fillStyle = color;
+    ctx2.fillRect(bx+4, by+4, BLOCK-8, BLOCK-8);
+    ctx2.globalAlpha = 1;
+    ctx2.shadowBlur = 14;
+    ctx2.shadowColor = color;
+    ctx2.strokeStyle = color;
+    ctx2.lineWidth = 1.6;
+    ctx2.strokeRect(bx+2, by+2, BLOCK-4, BLOCK-4);
+    ctx2.shadowBlur = 0;
+    ctx2.strokeStyle = 'rgba(255,255,255,0.3)';
+    ctx2.lineWidth = 0.8;
+    ctx2.strokeRect(bx+6, by+6, BLOCK-12, BLOCK-12);
+  } else if(style === 'natural'){
+    ctx2.globalAlpha = 0.22;
+    ctx2.fillStyle = color;
+    ctx2.fillRect(bx+3, by+3, BLOCK-6, BLOCK-6);
+    ctx2.globalAlpha = 1;
+    ctx2.strokeStyle = color;
+    ctx2.lineWidth = 1.6;
+    ctx2.setLineDash([5,3]);
+    ctx2.strokeRect(bx+2, by+2, BLOCK-4, BLOCK-4);
+    ctx2.setLineDash([]);
+    ctx2.strokeStyle = 'rgba(255,255,255,0.22)';
+    ctx2.lineWidth = 0.8;
+    ctx2.strokeRect(bx+7, by+7, BLOCK-14, BLOCK-14);
+  } else if(style === 'matrix'){
+    ctx2.globalAlpha = 0.22;
+    ctx2.fillStyle = color;
+    ctx2.fillRect(bx+4, by+4, BLOCK-8, BLOCK-8);
+    ctx2.globalAlpha = 1;
+    ctx2.shadowBlur = 12;
+    ctx2.shadowColor = color;
+    ctx2.strokeStyle = color;
+    ctx2.lineWidth = 1.7;
+    ctx2.setLineDash([3,3]);
+    ctx2.strokeRect(bx+2, by+2, BLOCK-4, BLOCK-4);
+    ctx2.setLineDash([]);
+    ctx2.shadowBlur = 0;
+    ctx2.fillStyle = 'rgba(255,240,240,0.72)';
+    ctx2.font = '10px Share Tech Mono';
+    ctx2.textAlign = 'center';
+    ctx2.textBaseline = 'middle';
+    ctx2.fillText('()', bx + BLOCK/2, by + BLOCK/2 + 1);
+  } else {
+    ctx2.globalAlpha = 0.18;
+    ctx2.fillStyle = color;
+    ctx2.fillRect(bx+3, by+3, BLOCK-6, BLOCK-6);
+    ctx2.globalAlpha = 1;
+    ctx2.strokeStyle = color;
+    ctx2.lineWidth = 1.8;
+    ctx2.setLineDash([4,2]);
+    ctx2.strokeRect(bx+2, by+2, BLOCK-4, BLOCK-4);
+    ctx2.setLineDash([]);
+    ctx2.strokeStyle = 'rgba(255,255,255,0.28)';
+    ctx2.lineWidth = 0.8;
+    ctx2.strokeRect(bx+6, by+6, BLOCK-12, BLOCK-12);
+  }
+
+  ctx2.restore();
+}
+
+function draw(){
+  time++;
+  const shake=((gameStyle==='futurista'||gameStyle==='matrix')&&shakeTimer>0)?(Math.random()-0.5)*shakeTimer*0.8:0;
+  if(shakeTimer>0) shakeTimer--;
+  ctx.save(); ctx.translate(shake,shake*0.5);
+
+  if(gameStyle==='futurista'){
+    ctx.fillStyle='#020209'; ctx.fillRect(0,0,canvas.width,canvas.height);
+    ctx.lineWidth=0.5;
+    for(let r=0;r<=ROWS;r++){ctx.strokeStyle=`rgba(0,255,255,${r%5===0?0.15:0.04})`;ctx.beginPath();ctx.moveTo(0,r*BLOCK);ctx.lineTo(COLS*BLOCK,r*BLOCK);ctx.stroke();}
+    for(let c=0;c<=COLS;c++){ctx.strokeStyle=`rgba(0,255,255,${c%5===0?0.15:0.04})`;ctx.beginPath();ctx.moveTo(c*BLOCK,0);ctx.lineTo(c*BLOCK,ROWS*BLOCK);ctx.stroke();}
+    for(let r=0;r<ROWS;r++){
+      if(flashRows.includes(r)){const a=0.4+0.6*Math.sin(time*0.8);ctx.fillStyle=`rgba(255,255,255,${a})`;ctx.fillRect(0,r*BLOCK,canvas.width,BLOCK);}
+      else{for(let c=0;c<COLS;c++) drawBlockFuturista(ctx,c,r,board[r][c]);}
+    }
+    const gy=ghostY();
+    if(gy!==py) for(let r=0;r<piece.shape.length;r++) for(let c=0;c<piece.shape[r].length;c++) if(piece.shape[r][c]){const[col]=PALETTE_FUTURISTA[piece.id];drawGhostBlock(ctx,px+c,gy+r,col,'futurista');}
+    const gp=14+4*Math.sin(time*0.15);
+    for(let r=0;r<piece.shape.length;r++) for(let c=0;c<piece.shape[r].length;c++) if(piece.shape[r][c]){ctx.shadowBlur=gp;ctx.shadowColor=PALETTE_FUTURISTA[piece.id][1];drawBlockFuturista(ctx,px+c,py+r,piece.id,1,false);ctx.shadowBlur=0;}
+
+  } else if(gameStyle==='natural'){
+    ctx.fillStyle='#0d150a'; ctx.fillRect(0,0,canvas.width,canvas.height);
+    ctx.lineWidth=1;
+    for(let r=0;r<=ROWS;r++){ctx.strokeStyle=`rgba(70,110,40,${r%5===0?0.18:0.06})`;ctx.beginPath();ctx.moveTo(0,r*BLOCK);ctx.lineTo(COLS*BLOCK,r*BLOCK);ctx.stroke();}
+    for(let c=0;c<=COLS;c++){ctx.strokeStyle=`rgba(70,110,40,${c%5===0?0.18:0.06})`;ctx.beginPath();ctx.moveTo(c*BLOCK,0);ctx.lineTo(c*BLOCK,ROWS*BLOCK);ctx.stroke();}
+    for(let r=0;r<ROWS;r++){
+      if(flashRows.includes(r)){const a=0.4+0.6*Math.sin(time*0.8);ctx.fillStyle=`rgba(100,180,50,${a})`;ctx.fillRect(0,r*BLOCK,canvas.width,BLOCK);}
+      else{for(let c=0;c<COLS;c++) drawBlockNatural(ctx,c,r,board[r][c]);}
+    }
+    const gy=ghostY();
+    if(gy!==py) for(let r=0;r<piece.shape.length;r++) for(let c=0;c<piece.shape[r].length;c++) if(piece.shape[r][c]){const[col]=PALETTE_NATURAL[piece.id];drawGhostBlock(ctx,px+c,gy+r,col,'natural');}
+    for(let r=0;r<piece.shape.length;r++) for(let c=0;c<piece.shape[r].length;c++) if(piece.shape[r][c]) drawBlockNatural(ctx,px+c,py+r,piece.id);
+
+  } else if(gameStyle==='matrix'){
+    ctx.fillStyle='#090102'; ctx.fillRect(0,0,canvas.width,canvas.height);
+    const pulse = 0.55 + 0.45*Math.sin(time*0.3);
+    const glowBand = ctx.createRadialGradient(canvas.width*0.5, canvas.height*0.16, 20, canvas.width*0.5, canvas.height*0.16, canvas.width*0.8);
+    glowBand.addColorStop(0, `rgba(255,40,70,${0.18*pulse})`);
+    glowBand.addColorStop(1, 'rgba(255,40,70,0)');
+    ctx.fillStyle = glowBand;
+    ctx.fillRect(0,0,canvas.width,canvas.height);
+    ctx.lineWidth=0.5;
+    for(let r=0;r<=ROWS;r++){ctx.strokeStyle=`rgba(255,90,110,${r%5===0?0.18:0.06})`;ctx.beginPath();ctx.moveTo(0,r*BLOCK);ctx.lineTo(COLS*BLOCK,r*BLOCK);ctx.stroke();}
+    for(let c=0;c<=COLS;c++){ctx.strokeStyle=`rgba(255,90,110,${c%5===0?0.18:0.06})`;ctx.beginPath();ctx.moveTo(c*BLOCK,0);ctx.lineTo(c*BLOCK,ROWS*BLOCK);ctx.stroke();}
+    if(garbageWarningActive){
+      const warnAlpha = 0.2 + 0.25*Math.sin(time*0.55);
+      ctx.fillStyle = `rgba(255,80,100,${warnAlpha})`;
+      ctx.fillRect(garbageHole*BLOCK, 0, BLOCK, canvas.height);
+      ctx.fillStyle = `rgba(255,180,190,${warnAlpha*0.9})`;
+      ctx.fillRect(garbageHole*BLOCK+6, 0, BLOCK-12, canvas.height);
+      ctx.fillStyle = `rgba(255,70,90,${warnAlpha*0.85})`;
+      ctx.fillRect(0, canvas.height-BLOCK, canvas.width, BLOCK);
+    }
+    for(let r=0;r<ROWS;r++){
+      if(flashRows.includes(r)){const a=0.35+0.55*Math.sin(time*0.95);ctx.fillStyle=`rgba(255,190,190,${a})`;ctx.fillRect(0,r*BLOCK,canvas.width,BLOCK);}
+      else{for(let c=0;c<COLS;c++) drawBlockMatrix(ctx,c,r,board[r][c]);}
+    }
+    const gy=ghostY();
+    if(gy!==py) for(let r=0;r<piece.shape.length;r++) for(let c=0;c<piece.shape[r].length;c++) if(piece.shape[r][c]){const[col]=PALETTE_MATRIX[piece.id];drawGhostBlock(ctx,px+c,gy+r,col,'matrix');}
+    const piecePulse = 10 + 6*Math.sin(time*0.22);
+    for(let r=0;r<piece.shape.length;r++) for(let c=0;c<piece.shape[r].length;c++) if(piece.shape[r][c]){ctx.shadowBlur=piecePulse;ctx.shadowColor=PALETTE_MATRIX[piece.id][1];drawBlockMatrix(ctx,px+c,py+r,piece.id,1,true);ctx.shadowBlur=0;}
+
+  } else {
+    ctx.fillStyle='#1a1a1a'; ctx.fillRect(0,0,canvas.width,canvas.height);
+    ctx.lineWidth=1;
+    for(let r=0;r<=ROWS;r++){ctx.strokeStyle='rgba(255,255,255,0.06)';ctx.beginPath();ctx.moveTo(0,r*BLOCK);ctx.lineTo(COLS*BLOCK,r*BLOCK);ctx.stroke();}
+    for(let c=0;c<=COLS;c++){ctx.strokeStyle='rgba(255,255,255,0.06)';ctx.beginPath();ctx.moveTo(c*BLOCK,0);ctx.lineTo(c*BLOCK,ROWS*BLOCK);ctx.stroke();}
+    for(let r=0;r<ROWS;r++){
+      if(flashRows.includes(r)){const a=0.5+0.5*Math.sin(time*0.9);ctx.fillStyle=`rgba(255,255,255,${a})`;ctx.fillRect(0,r*BLOCK,canvas.width,BLOCK);}
+      else{for(let c=0;c<COLS;c++) drawBlockClassic(ctx,c,r,board[r][c]);}
+    }
+    const gy=ghostY();
+    if(gy!==py) for(let r=0;r<piece.shape.length;r++) for(let c=0;c<piece.shape[r].length;c++) if(piece.shape[r][c]){const[col]=PALETTE_CLASSIC[piece.id];drawGhostBlock(ctx,px+c,gy+r,col,'classic');}
+    for(let r=0;r<piece.shape.length;r++) for(let c=0;c<piece.shape[r].length;c++) if(piece.shape[r][c]) drawBlockClassic(ctx,px+c,py+r,piece.id);
+  }
+
+  ctx.restore();
+  updateParticles();
+}
+
+function drawNext(){
+  const bg = currentTheme().nextBg;
+  nctx.fillStyle=bg; nctx.fillRect(0,0,nextCanvas.width,nextCanvas.height);
+  const s=nextPiece.shape,bk=20;
+  const ox=Math.floor((nextCanvas.width/bk-s[0].length)/2);
+  const oy=Math.floor((nextCanvas.height/bk-s.length)/2);
+  for(let r=0;r<s.length;r++) for(let c=0;c<s[r].length;c++) if(s[r][c]){
+    if(gameStyle==='futurista'){
+      const[col,glowCol]=PALETTE_FUTURISTA[s[r][c]];
+      nctx.shadowBlur=12;nctx.shadowColor=glowCol;nctx.fillStyle=col;nctx.fillRect((ox+c)*bk+1,(oy+r)*bk+1,bk-2,bk-2);nctx.shadowBlur=0;
+    } else if(gameStyle==='natural'){
+      const[col,hi,sh]=PALETTE_NATURAL[s[r][c]];
+      nctx.fillStyle=col;nctx.fillRect((ox+c)*bk+1,(oy+r)*bk+1,bk-2,bk-2);
+      nctx.fillStyle=hi;nctx.fillRect((ox+c)*bk+1,(oy+r)*bk+1,bk-2,3);nctx.fillRect((ox+c)*bk+1,(oy+r)*bk+1,3,bk-2);
+      nctx.fillStyle=sh;nctx.fillRect((ox+c)*bk+1,(oy+r)*bk+bk-4,bk-2,3);nctx.fillRect((ox+c)*bk+bk-4,(oy+r)*bk+1,3,bk-2);
+      // mini ivy on next preview
+      const seed=s[r][c]*137+c*31+r*17;
+      const lx=(ox+c)*bk+3+srand(seed+1)*(bk-8), ly=(oy+r)*bk+3+srand(seed+2)*(bk-8);
+      const ang=srand(seed+3)*Math.PI*2, sz=2+srand(seed+4)*3.5;
+      const h=90+Math.floor(srand(seed+5)*35), l=26+Math.floor(srand(seed+6)*14);
+      nctx.save(); nctx.translate(lx,ly); nctx.rotate(ang);
+      nctx.beginPath(); nctx.moveTo(0,0); nctx.bezierCurveTo(sz*0.35,-sz*0.62,sz*0.95,-sz*0.27,sz*1.08,0); nctx.bezierCurveTo(sz*0.95,sz*0.27,sz*0.35,sz*0.62,0,0);
+      nctx.fillStyle=`hsl(${h},62%,${l}%)`; nctx.fill(); nctx.restore();
+    } else if(gameStyle==='matrix'){
+      const[col,glowCol]=PALETTE_MATRIX[s[r][c]];
+      nctx.shadowBlur=8;nctx.shadowColor=glowCol;
+      nctx.fillStyle='rgba(34,2,6,0.96)';nctx.fillRect((ox+c)*bk+1,(oy+r)*bk+1,bk-2,bk-2);
+      nctx.fillStyle=col;nctx.fillRect((ox+c)*bk+3,(oy+r)*bk+3,bk-6,bk-6);
+      nctx.fillStyle='rgba(255,230,230,0.85)';
+      nctx.font='10px Share Tech Mono';
+      nctx.textAlign='center';
+      nctx.textBaseline='middle';
+      nctx.fillText((s[r][c]%2===0?'0':'1'), (ox+c)*bk + bk/2, (oy+r)*bk + bk/2 + 1);
+      nctx.shadowBlur=0;
+    } else {
+      const[col,hi,sh]=PALETTE_CLASSIC[s[r][c]];
+      nctx.fillStyle=col;nctx.fillRect((ox+c)*bk+1,(oy+r)*bk+1,bk-2,bk-2);
+      nctx.fillStyle=hi;nctx.fillRect((ox+c)*bk+1,(oy+r)*bk+1,bk-2,3);nctx.fillRect((ox+c)*bk+1,(oy+r)*bk+1,3,bk-2);
+      nctx.fillStyle=sh;nctx.fillRect((ox+c)*bk+1,(oy+r)*bk+bk-4,bk-2,3);nctx.fillRect((ox+c)*bk+bk-4,(oy+r)*bk+1,3,bk-2);
+    }
+  }
+}
+
+// ─── LOOP ───
+let animId;
+function frame(){
+  if(!dead){
+    if(isMatrixMode() && !paused){
+      const now = performance.now();
+      garbageWarningActive = now >= garbageWarnAt && now < garbageClock;
+      updateGarbageWarningUI();
+      if(now >= garbageClock){
+        injectGarbageRow();
+        scheduleNextGarbage();
+      }
+    } else {
+      garbageWarningActive = false;
+      updateGarbageWarningUI();
+    }
+    draw();
+  }
+  animId=requestAnimationFrame(frame);
+}
+function tick(){ if(paused||dead) return; if(fits(piece.shape,px,py+1)) py++; else place(); }
+
+function setPaused(val){
+  paused=val;
+  const btn=document.getElementById('pause-btn');
+  const overlay=document.getElementById('pause-overlay');
+  const hint=document.getElementById('pause-hint');
+  hint.textContent = currentThemeUI().pauseHint;
+  if(paused){btn.classList.add('active');overlay.classList.add('visible');}
+  else{btn.classList.remove('active');overlay.classList.remove('visible');}
+  updateGarbageWarningUI();
+}
+
+function startGame(){
+  startLevel=getStartLevel();
+  board=newBoard(); score=0; lines=0; level=startLevel; dead=false; flashRows=[]; shakeTimer=0;
+  garbageWarningActive = false;
+  scheduleNextGarbage();
+  setPaused(false);
+  document.getElementById('score').textContent='0';
+  document.getElementById('lines').textContent='0';
+  document.getElementById('level').textContent=String(level).padStart(2,'0');
+  document.getElementById('level-bar').style.width='0%';
+  document.getElementById('gameover-score').style.display='none';
+  document.getElementById('overlay-title').textContent='TETRIS';
+  document.getElementById('overlay').style.display='none';
+  document.getElementById('pause-btn').classList.add('visible');
+  piece=randPiece(); nextPiece=randPiece();
+  px=Math.floor((COLS-piece.shape[0].length)/2); py=-piece.shape.length;
+  applyStyle();
+  updateGarbageWarningUI();
+  drawNext(); resetDropLoop();
+  cancelAnimationFrame(animId); frame();
+}
+
+// ─── INPUT ───
+document.addEventListener('keydown',e=>{
+  if(dead) return;
+  if(paused&&e.key!=='p'&&e.key!=='P') return;
+  switch(e.key){
+    case 'ArrowLeft':  if(fits(piece.shape,px-1,py)){px--;sfxMove();} break;
+    case 'ArrowRight': if(fits(piece.shape,px+1,py)){px++;sfxMove();} break;
+    case 'ArrowDown':  if(fits(piece.shape,px,py+1)) py++; break;
+    case 'ArrowUp':{ const rot=rotate(piece.shape); if(fits(rot,px,py)){piece.shape=rot;sfxRotate();} else if(fits(rot,px-1,py)){piece.shape=rot;px--;sfxRotate();} else if(fits(rot,px+1,py)){piece.shape=rot;px++;sfxRotate();} break; }
+    case ' ': e.preventDefault(); sfxDrop(); py=ghostY(); place(); break;
+    case 'p': case 'P': setPaused(!paused); break;
+  }
+});
+
+document.getElementById('start-btn').addEventListener('click', startGame);
+document.getElementById('pause-btn').addEventListener('click', ()=>{ if(!dead) setPaused(!paused); });
+document.getElementById('resume-btn').addEventListener('click', ()=>setPaused(false));
+document.getElementById('quit-btn').addEventListener('click', ()=>{
+  dead=true; clearInterval(loop); cancelAnimationFrame(animId); setPaused(false);
+  garbageWarningActive = false;
+  updateGarbageWarningUI();
+  document.getElementById('pause-btn').classList.remove('visible');
+  document.getElementById('gameover-score').style.display='none';
+  document.getElementById('overlay-title').textContent='TETRIS';
+  document.getElementById('start-btn').textContent='JUGAR';
+  document.getElementById('overlay').style.display='flex';
+});
+</script>
+</body>
+</html>

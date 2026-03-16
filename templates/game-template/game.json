@@ -1,0 +1,9 @@
+﻿{
+  "id": "your-game-id",
+  "title": "Your Game",
+  "description": "Short description of the game.",
+  "path": "games/your-game-id/index.html",
+  "thumbnail": "assets/img/your-game-thumbnail.svg",
+  "category": "Arcade",
+  "scoreType": "points"
+}

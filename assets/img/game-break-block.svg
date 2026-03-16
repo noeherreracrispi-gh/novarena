@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1280 720">
+  <defs><linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#09101d"/><stop offset="100%" stop-color="#6a2d16"/></linearGradient></defs>
+  <rect width="1280" height="720" fill="url(#bg)"/>
+  <g><rect x="180" y="120" width="180" height="70" rx="18" fill="#68d8ff"/><rect x="390" y="120" width="180" height="70" rx="18" fill="#7bf1a8"/><rect x="600" y="120" width="180" height="70" rx="18" fill="#ffae6d"/><rect x="810" y="120" width="180" height="70" rx="18" fill="#68d8ff"/><rect x="1020" y="120" width="80" height="70" rx="18" fill="#7bf1a8"/></g>
+  <rect x="500" y="560" width="280" height="26" rx="13" fill="#edf5ff"/>
+  <circle cx="660" cy="460" r="26" fill="#ffae6d"/>
+  <text x="120" y="650" fill="#edf5ff" font-family="Arial, sans-serif" font-size="96" font-weight="700">BREAK BLOCK</text>
+</svg>

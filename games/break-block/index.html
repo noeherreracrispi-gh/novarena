@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="ca">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Break Block</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <main class="game-shell">
+    <header class="hud">
+      <div class="hud-item">
+        <span class="label">Punts</span>
+        <strong id="score">0</strong>
+      </div>
+      <div class="hud-item">
+        <span class="label">Nivell</span>
+        <strong id="level">1</strong>
+      </div>
+      <div class="hud-item">
+        <span class="label">Vides</span>
+        <strong id="lives">3</strong>
+      </div>
+      <div class="hud-item">
+        <span class="label">Blocs</span>
+        <strong id="blocks-left">0</strong>
+      </div>
+    </header>
+
+    <section class="canvas-wrap">
+      <canvas id="gameCanvas" width="900" height="600" aria-label="Joc Break Block"></canvas>
+
+      <div class="overlay" id="overlay">
+        <h1>Break Block</h1>
+        <p>Trenca tots els blocs i evita que la pilota caigui.</p>
+        <p>Mou la barra amb les tecles esquerra i dreta.</p>
+        <button id="startButton" type="button">Comencar</button>
+      </div>
+    </section>
+
+    <footer class="controls">
+      <p><strong>Controls:</strong> fletxa esquerra, fletxa dreta, tecla <kbd>R</kbd> per reiniciar.</p>
+    </footer>
+  </main>
+
+  <script src="script.js"></script>
+</body>
+</html>

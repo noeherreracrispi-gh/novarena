@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1280 720">
+  <defs><linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#130924"/><stop offset="100%" stop-color="#3d1b63"/></linearGradient></defs>
+  <rect width="1280" height="720" fill="url(#bg)"/>
+  <g opacity="0.7" stroke="#68d8ff" stroke-width="5"><path d="M180 530l180-260 180 260 180-260 180 260 180-260"/><path d="M220 580h840"/><path d="M260 520h760"/></g>
+  <text x="120" y="600" fill="#edf5ff" font-family="Arial, sans-serif" font-size="96" font-weight="700">NEON RUNNER 3D</text>
+</svg>
