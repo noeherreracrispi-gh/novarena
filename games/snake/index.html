@@ -342,14 +342,12 @@ function resizeCanvas() {
 
   // Compute CELL so the iso-grid fills ~90% of the smallest dimension
   // Iso grid bbox: W ÃƒÂ¢Ã¢â‚¬Â°Ã‹â€  (COLS+ROWS)*CELL/2,  H ÃƒÂ¢Ã¢â‚¬Â°Ã‹â€  (COLS+ROWS)*CELL/2*ISO_YS + CUBE_H
-  const CUBE_RATIO = 0.53;
-  const hudPad   = 80;  // room for the fixed HUD at the top
-  const availW   = canvas.width  * 0.92;
-  const availH   = canvas.height * 0.92 - hudPad;
-  const cellFromW = availW  * 2 / (COLS + ROWS);
-  const cellFromH = availH  / ((COLS + ROWS) / 2 * ISO_YS + CUBE_RATIO);
-  CELL   = Math.max(16, Math.min(Math.floor(cellFromW), Math.floor(cellFromH)));
-  CUBE_H = Math.round(CELL * CUBE_RATIO);
+  const hudPad = 118;
+  const sidePad = 40;
+  const availW = canvas.width - sidePad * 2;
+  const availH = canvas.height - hudPad - 34;
+  CELL = Math.max(18, Math.floor(Math.min(availW / COLS, availH / ROWS)));
+  CUBE_H = Math.round(CELL * 0.22);
   // Invalidate cached gradients
   _bgGrad = null;
   _vigGrad = null;
@@ -359,27 +357,64 @@ resizeCanvas();
 window.addEventListener('resize', resizeCanvas);
 
 // iso projection: grid (col, row) ÃƒÂ¢Ã¢â‚¬Â Ã¢â‚¬â„¢ canvas (x, y)  (before centre offset)
-function isoX(c, r) { return (c - r) * (CELL / 2); }
-function isoY(c, r) { return (c + r) * (CELL / 2) * ISO_YS; }
+function isoX(c, r) { return c * CELL; }
+function isoY(c, r) { return r * CELL; }
 
 // Compute the translate so the iso-grid is perfectly centred in the canvas
 function gridOrigin() {
-  // extremes of the grid in iso-space
-  const minX = isoX(0, ROWS - 1);   // top-left iso corner
-  const maxX = isoX(COLS - 1, 0);   // top-right iso corner
-  const minY = isoY(0, 0);          // topmost point
-  const maxY = isoY(COLS - 1, ROWS - 1) + CUBE_H; // bottommost after extrusion
-
-  const gridW = maxX - minX;
-  const gridH = maxY - minY;
+  const gridW = COLS * CELL;
+  const gridH = ROWS * CELL;
+  const topPad = 94;
+  const usableH = canvas.height - topPad - 30;
 
   return {
-    ox: canvas.width  / 2 - gridW / 2 - minX,
-    oy: canvas.height / 2 - gridH / 2 - minY
+    ox: Math.round((canvas.width - gridW) / 2),
+    oy: Math.round(topPad + Math.max(0, (usableH - gridH) / 2))
   };
 }
 
 // ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ Audio ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬
+function boardMetrics() {
+  return {
+    x: _ox,
+    y: _oy,
+    w: COLS * CELL,
+    h: ROWS * CELL,
+    r: Math.max(16, CELL * 0.42),
+  };
+}
+
+function getCellRect(col, row, inset = 0) {
+  return {
+    x: _ox + isoX(col, row) + inset,
+    y: _oy + isoY(col, row) + inset,
+    w: CELL - inset * 2,
+    h: CELL - inset * 2,
+  };
+}
+
+function getCellCenter(col, row) {
+  return {
+    x: _ox + isoX(col, row) + CELL * 0.5,
+    y: _oy + isoY(col, row) + CELL * 0.5,
+  };
+}
+
+function roundedRectPath(x, y, w, h, r) {
+  const rr = Math.max(0, Math.min(r, w * 0.5, h * 0.5));
+  ctx.beginPath();
+  ctx.moveTo(x + rr, y);
+  ctx.lineTo(x + w - rr, y);
+  ctx.quadraticCurveTo(x + w, y, x + w, y + rr);
+  ctx.lineTo(x + w, y + h - rr);
+  ctx.quadraticCurveTo(x + w, y + h, x + w - rr, y + h);
+  ctx.lineTo(x + rr, y + h);
+  ctx.quadraticCurveTo(x, y + h, x, y + h - rr);
+  ctx.lineTo(x, y + rr);
+  ctx.quadraticCurveTo(x, y, x + rr, y);
+  ctx.closePath();
+}
+
 let AC = null;
 let muted = false;
 
@@ -644,13 +679,12 @@ function stepLogic() {
 
 // ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ Particles ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬
 function spawnParticles(col, row, n) {
-  const cx = _ox + isoX(col, row);
-  const cy = _oy + isoY(col, row);
+  const { x: cx, y: cy } = getCellCenter(col, row);
   for (let i = 0; i < n; i++) {
     const angle = Math.random() * Math.PI * 2;
     const spd   = 1.2 + Math.random() * 3.8;
     particles.push({
-      x: cx, y: cy - CUBE_H * 0.5,
+      x: cx, y: cy,
       vx: Math.cos(angle) * spd,
       vy: Math.sin(angle) * spd * 0.6 - 2.2,
       life: 1,
@@ -900,55 +934,73 @@ function drawBackground() {
 
 // ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ Drawing: isometric floor grid ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬
 function drawGrid() {
-  const ox = _ox, oy = _oy;
-  const hw = CELL / 2, hh = hw * ISO_YS;
   const lineAlp = 0.16 + 0.06 * Math.sin(gridPhase * 1.4);
+  const board = boardMetrics();
+  const pulse = 0.5 + 0.5 * Math.sin(gridPhase * 0.9);
 
   // Tile shading ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬Â batch even and odd tiles into 2 paths (was 400 individual fills)
-  ctx.fillStyle = '#00ccff';
-  ctx.beginPath();
-  for (let c = 0; c < COLS; c++) {
-    for (let r = 0; r < ROWS; r++) {
-      if ((c + r) % 2 !== 0) continue;
-      const x = ox + isoX(c, r), y = oy + isoY(c, r);
-      ctx.moveTo(x, y - hh); ctx.lineTo(x + hw, y);
-      ctx.lineTo(x, y + hh); ctx.lineTo(x - hw, y);
-      ctx.closePath();
-    }
-  }
-  ctx.globalAlpha = 0.045;
+  ctx.save();
+  ctx.shadowColor = 'rgba(0,255,190,0.16)';
+  ctx.shadowBlur = 24;
+  ctx.fillStyle = 'rgba(4,18,18,0.82)';
+  roundedRectPath(board.x - 10, board.y - 10, board.w + 20, board.h + 20, board.r + 10);
+  ctx.fill();
+  ctx.restore();
+
+  const boardGrad = ctx.createLinearGradient(board.x, board.y, board.x + board.w, board.y + board.h);
+  boardGrad.addColorStop(0, 'rgba(6,36,32,0.95)');
+  boardGrad.addColorStop(0.55, 'rgba(7,60,52,0.9)');
+  boardGrad.addColorStop(1, 'rgba(4,28,34,0.94)');
+  ctx.fillStyle = boardGrad;
+  roundedRectPath(board.x, board.y, board.w, board.h, board.r);
   ctx.fill();
 
-  ctx.beginPath();
+  ctx.save();
+  roundedRectPath(board.x, board.y, board.w, board.h, board.r);
+  ctx.clip();
+
   for (let c = 0; c < COLS; c++) {
     for (let r = 0; r < ROWS; r++) {
-      if ((c + r) % 2 !== 1) continue;
-      const x = ox + isoX(c, r), y = oy + isoY(c, r);
-      ctx.moveTo(x, y - hh); ctx.lineTo(x + hw, y);
-      ctx.lineTo(x, y + hh); ctx.lineTo(x - hw, y);
-      ctx.closePath();
+      const x = board.x + c * CELL;
+      const y = board.y + r * CELL;
+      const even = (c + r) % 2 === 0;
+      ctx.fillStyle = even
+        ? `rgba(0,255,170,${0.06 + pulse * 0.035})`
+        : `rgba(0,170,255,${0.03 + pulse * 0.02})`;
+      ctx.fillRect(x, y, CELL, CELL);
     }
   }
-  ctx.globalAlpha = 0.018;
-  ctx.fill();
-  ctx.globalAlpha = 1;
 
-  // Real tile borders so the snake reads as centered on each cell.
-  ctx.strokeStyle = `rgba(0,255,220,${lineAlp})`;
+  ctx.strokeStyle = `rgba(160,255,235,${0.12 + pulse * 0.06})`;
   ctx.lineWidth = 1;
   ctx.beginPath();
-  for (let c = 0; c < COLS; c++) {
-    for (let r = 0; r < ROWS; r++) {
-      const x = ox + isoX(c, r), y = oy + isoY(c, r);
-      ctx.moveTo(x, y - hh);
-      ctx.lineTo(x + hw, y);
-      ctx.lineTo(x, y + hh);
-      ctx.lineTo(x - hw, y);
-      ctx.closePath();
-    }
+  for (let c = 1; c < COLS; c++) {
+    const x = board.x + c * CELL;
+    ctx.moveTo(x, board.y);
+    ctx.lineTo(x, board.y + board.h);
+  }
+  for (let r = 1; r < ROWS; r++) {
+    const y = board.y + r * CELL;
+    ctx.moveTo(board.x, y);
+    ctx.lineTo(board.x + board.w, y);
   }
   ctx.stroke();
 
+  const sweep = ctx.createLinearGradient(board.x, board.y, board.x, board.y + board.h);
+  sweep.addColorStop(0, 'rgba(255,255,255,0.16)');
+  sweep.addColorStop(0.35, 'rgba(255,255,255,0)');
+  sweep.addColorStop(1, 'rgba(0,0,0,0.08)');
+  ctx.fillStyle = sweep;
+  ctx.fillRect(board.x, board.y, board.w, board.h);
+  ctx.restore();
+
+  ctx.shadowColor = 'rgba(0,255,204,0.28)';
+  ctx.shadowBlur = 10;
+  ctx.strokeStyle = `rgba(0,255,220,${0.44 + pulse * 0.18 + lineAlp * 0.4})`;
+  ctx.lineWidth = 2;
+  roundedRectPath(board.x, board.y, board.w, board.h, board.r);
+  ctx.stroke();
+  ctx.shadowBlur = 0;
 }
 
 // ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ Drawing: isometric cube ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬
@@ -961,53 +1013,42 @@ function drawGrid() {
 */
 // Unified cube draw ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬Â glow only applied to head (glowR > 0)
 function drawCube(col, row, topCol, leftCol, rightCol, glowCol, glowR) {
-  const x  = _ox + isoX(col, row);
-  const y  = _oy + isoY(col, row);
-  const hw = CELL / 2, hh = hw * ISO_YS, h = CUBE_H;
+  const rect = getCellRect(col, row, CELL * 0.08);
+  const radius = Math.max(8, rect.h * 0.32);
+  const grad = ctx.createLinearGradient(rect.x, rect.y, rect.x + rect.w, rect.y + rect.h);
+  grad.addColorStop(0, topCol);
+  grad.addColorStop(1, rightCol);
 
   if (glowR > 0) {
     ctx.shadowColor = glowCol;
     ctx.shadowBlur  = glowR;
   }
 
-  // Top face
-  ctx.fillStyle = topCol;
-  ctx.beginPath();
-  ctx.moveTo(x, y-hh); ctx.lineTo(x+hw, y); ctx.lineTo(x, y+hh); ctx.lineTo(x-hw, y);
-  ctx.closePath(); ctx.fill();
-  // Left face
-  ctx.fillStyle = leftCol;
-  ctx.beginPath();
-  ctx.moveTo(x-hw, y); ctx.lineTo(x, y+hh); ctx.lineTo(x, y+hh+h); ctx.lineTo(x-hw, y+h);
-  ctx.closePath(); ctx.fill();
-  // Right face
-  ctx.fillStyle = rightCol;
-  ctx.beginPath();
-  ctx.moveTo(x+hw, y); ctx.lineTo(x, y+hh); ctx.lineTo(x, y+hh+h); ctx.lineTo(x+hw, y+h);
-  ctx.closePath(); ctx.fill();
+  ctx.fillStyle = grad;
+  roundedRectPath(rect.x, rect.y, rect.w, rect.h, radius);
+  ctx.fill();
+
+  ctx.strokeStyle = leftCol;
+  ctx.lineWidth = 1.5;
+  roundedRectPath(rect.x, rect.y, rect.w, rect.h, radius);
+  ctx.stroke();
 
   if (glowR > 0) ctx.shadowBlur = 0;
 }
 
 function drawSnakeTileLock(col, row, strength, isHead) {
-  const x  = _ox + isoX(col, row);
-  const y  = _oy + isoY(col, row);
-  const hw = CELL / 2, hh = hw * ISO_YS;
+  const rect = getCellRect(col, row, CELL * 0.16);
 
   ctx.save();
   ctx.globalAlpha = 0.12 + strength * 0.16;
   ctx.fillStyle = isHead ? 'rgba(0,255,136,1)' : 'rgba(0,210,150,1)';
-  ctx.beginPath();
-  ctx.moveTo(x, y - hh);
-  ctx.lineTo(x + hw, y);
-  ctx.lineTo(x, y + hh);
-  ctx.lineTo(x - hw, y);
-  ctx.closePath();
+  roundedRectPath(rect.x, rect.y, rect.w, rect.h, Math.max(8, rect.h * 0.28));
   ctx.fill();
 
   ctx.globalAlpha = 0.28 + strength * 0.2;
   ctx.strokeStyle = isHead ? 'rgba(180,255,220,1)' : 'rgba(0,255,204,1)';
   ctx.lineWidth = isHead ? 1.8 : 1.15;
+  roundedRectPath(rect.x, rect.y, rect.w, rect.h, Math.max(8, rect.h * 0.28));
   ctx.stroke();
   ctx.restore();
 }
@@ -1016,74 +1057,113 @@ function drawSnakeTileLock(col, row, strength, isHead) {
 function drawSnake() {
   const display = getSnakeDisplay();
   const displayDir = getDisplayDirection();
-  const n = display.length;
+  if (!display.length) return;
 
   // Draw tailÃƒÂ¢Ã¢â‚¬Â Ã¢â‚¬â„¢head so head is rendered last (on top)
   // Glow only on the head ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬Â body segments drawn without shadow (huge perf win)
-  ctx.shadowBlur = 0;
-  for (let i = n - 1; i >= 0; i--) {
-    const { x, y } = display[i];
-    const frac   = i / Math.max(n - 1, 1);
-    const bright = 1 - frac * 0.5;
-    const blue   = Math.floor(frac * 110);
-    const green  = Math.floor(255 * bright);
+  const points = display.map(seg => getCellCenter(seg.x, seg.y));
+  const bodyW = CELL * 0.74;
+  const head = points[0];
+  const tail = points[points.length - 1];
+  const outline = ctx.createLinearGradient(head.x, head.y, tail.x, tail.y);
+  outline.addColorStop(0, 'rgba(0,255,180,0.98)');
+  outline.addColorStop(0.45, 'rgba(0,220,230,0.95)');
+  outline.addColorStop(1, 'rgba(0,110,200,0.88)');
+  const inner = ctx.createLinearGradient(head.x, head.y, tail.x, tail.y);
+  inner.addColorStop(0, 'rgba(180,255,240,0.92)');
+  inner.addColorStop(0.55, 'rgba(20,255,170,0.65)');
+  inner.addColorStop(1, 'rgba(0,180,255,0.22)');
 
-    const isHead  = i === 0;
-    const glowR   = isHead ? 20 : 0;  // only head gets glow
-    drawSnakeTileLock(x, y, bright, isHead);
-    drawCube(x, y,
-      `rgb(0,${green},${blue})`,
-      `rgb(0,${Math.floor(green*0.6)},${Math.floor(blue*0.7)})`,
-      `rgb(0,${Math.floor(green*0.72)},${Math.floor(blue*0.8)})`,
-      '#00ff88', glowR);
-
-    if (isHead) drawSnakeEyes(x, y, displayDir);
+  for (let i = Math.min(4, display.length - 1); i >= 0; i--) {
+    const bright = 1 - i / Math.max(display.length, 1) * 0.45;
+    drawSnakeTileLock(display[i].x, display[i].y, bright, i === 0);
   }
+
+  const traceSnake = () => {
+    ctx.beginPath();
+    ctx.moveTo(points[points.length - 1].x, points[points.length - 1].y);
+    for (let i = points.length - 2; i >= 0; i--) ctx.lineTo(points[i].x, points[i].y);
+  };
+
+  ctx.save();
+  ctx.lineCap = 'round';
+  ctx.lineJoin = 'round';
+  ctx.shadowColor = 'rgba(0,255,170,0.38)';
+  ctx.shadowBlur = bodyW * 0.52;
+  traceSnake();
+  ctx.strokeStyle = 'rgba(0,18,26,0.94)';
+  ctx.lineWidth = bodyW + CELL * 0.18;
+  ctx.stroke();
+
+  traceSnake();
+  ctx.strokeStyle = outline;
+  ctx.lineWidth = bodyW;
+  ctx.stroke();
+
+  ctx.shadowBlur = 0;
+  traceSnake();
+  ctx.strokeStyle = inner;
+  ctx.lineWidth = bodyW * 0.54;
+  ctx.stroke();
+  ctx.restore();
+
+  const headPulse = 0.5 + 0.5 * Math.sin(frameN * 0.18);
+  ctx.save();
+  ctx.shadowColor = '#00ff88';
+  ctx.shadowBlur = 18 + headPulse * 12;
+  ctx.fillStyle = '#00f0a0';
+  ctx.beginPath();
+  ctx.ellipse(head.x, head.y, bodyW * 0.52, bodyW * 0.47, dirToAngle(displayDir), 0, Math.PI * 2);
+  ctx.fill();
+
+  ctx.shadowBlur = 0;
+  ctx.fillStyle = 'rgba(180,255,240,0.34)';
+  ctx.beginPath();
+  ctx.ellipse(
+    head.x - displayDir.x * bodyW * 0.08,
+    head.y - displayDir.y * bodyW * 0.08,
+    bodyW * 0.23, bodyW * 0.17,
+    dirToAngle(displayDir), 0, Math.PI * 2
+  );
+  ctx.fill();
+  ctx.restore();
+
+  drawSnakeEyes(head.x, head.y, displayDir);
 }
 
-function drawSnakeEyes(col, row, facing = dir) {
-  const cx = _ox + isoX(col, row);
-  const cy = _oy + isoY(col, row);
-  const hw = CELL / 2;
-  const hh = (CELL / 2) * ISO_YS;
-  const fx = facing.x - facing.y;
-  const fy = (facing.x + facing.y) * ISO_YS;
-  const fl = Math.hypot(fx, fy) || 1;
-  const nx = fx / fl;
-  const ny = fy / fl;
+function drawSnakeEyes(cx, cy, facing = dir) {
+  const fl = Math.hypot(facing.x, facing.y) || 1;
+  const nx = facing.x / fl;
+  const ny = facing.y / fl;
   const rx = -ny;
   const ry = nx;
-  const anchorX = cx + nx * hw * 0.16;
-  const anchorY = cy + ny * hh * 0.42;
-  const foodX = _ox + isoX(food.x, food.y);
-  const foodY = _oy + isoY(food.x, food.y) - CUBE_H * 0.5;
+  const anchorX = cx + nx * CELL * 0.12;
+  const anchorY = cy + ny * CELL * 0.08;
+  const { x: foodX, y: foodY } = getCellCenter(food.x, food.y);
   const gazeX = foodX - cx;
   const gazeY = foodY - cy;
   const gazeL = Math.hypot(gazeX, gazeY) || 1;
-  const pupilDX = (gazeX / gazeL) * 0.75;
-  const pupilDY = (gazeY / gazeL) * 0.75;
+  const pupilDX = (gazeX / gazeL) * CELL * 0.045;
+  const pupilDY = (gazeY / gazeL) * CELL * 0.045;
 
-  // Eye positions offset on top-face rhombus
   const eyes = [
-    { ex: anchorX - rx * hw * 0.22, ey: anchorY - ry * hh * 0.85 },
-    { ex: anchorX + rx * hw * 0.22, ey: anchorY + ry * hh * 0.85 },
+    { ex: anchorX - rx * CELL * 0.16, ey: anchorY - ry * CELL * 0.16 },
+    { ex: anchorX + rx * CELL * 0.16, ey: anchorY + ry * CELL * 0.16 },
   ];
 
   ctx.save();
   for (const e of eyes) {
-    // White sclera
     ctx.shadowColor = '#ffffff';
-    ctx.shadowBlur  = 7;
+    ctx.shadowBlur  = 8;
     ctx.fillStyle   = '#ffffff';
     ctx.beginPath();
-    ctx.arc(e.ex, e.ey, 2.4, 0, Math.PI * 2);
+    ctx.arc(e.ex, e.ey, CELL * 0.14, 0, Math.PI * 2);
     ctx.fill();
-    // Glowing pupil
     ctx.shadowColor = '#00ff88';
     ctx.shadowBlur  = 5;
     ctx.fillStyle   = '#00ff88';
     ctx.beginPath();
-    ctx.arc(e.ex + pupilDX, e.ey + pupilDY, 1.2, 0, Math.PI * 2);
+    ctx.arc(e.ex + pupilDX, e.ey + pupilDY, CELL * 0.058, 0, Math.PI * 2);
     ctx.fill();
   }
   ctx.restore();
@@ -1095,62 +1175,55 @@ function drawFood() {
   const glowCol = `rgb(255,${Math.floor(90+110*p)},150)`;
 
   // Ressaltat exacte de la baldosa on ÃƒÆ’Ã‚Â©s el menjar
-  const ax  = _ox + isoX(food.x, food.y);
-  const ay  = _oy + isoY(food.x, food.y);
-  const hw  = CELL / 2, hh = hw * ISO_YS;
+  const center = getCellCenter(food.x, food.y);
+  const rect = getCellRect(food.x, food.y, CELL * 0.11);
+  const radius = Math.max(8, rect.h * 0.28);
 
   // Omplert de la baldosa (pulsant)
-  ctx.globalAlpha = 0.18 + 0.18 * p;
-  ctx.fillStyle   = glowCol;
-  ctx.beginPath();
-  ctx.moveTo(ax,      ay - hh);
-  ctx.lineTo(ax + hw, ay);
-  ctx.lineTo(ax,      ay + hh);
-  ctx.lineTo(ax - hw, ay);
-  ctx.closePath();
+  ctx.save();
+  ctx.globalAlpha = 0.16 + 0.18 * p;
+  ctx.shadowColor = glowCol;
+  ctx.shadowBlur = 18;
+  ctx.fillStyle = glowCol;
+  roundedRectPath(rect.x, rect.y, rect.w, rect.h, radius);
   ctx.fill();
 
   // Contorn brillant de la baldosa
-  ctx.globalAlpha = 0.55 + 0.45 * p;
-  ctx.strokeStyle = glowCol;
-  ctx.lineWidth   = 1.5;
+  ctx.globalAlpha = 0.9;
+  ctx.shadowBlur = 0;
+  ctx.strokeStyle = `rgba(255,240,244,${0.5 + 0.38 * p})`;
+  ctx.lineWidth = 1.6;
+  roundedRectPath(rect.x, rect.y, rect.w, rect.h, radius);
   ctx.stroke();
 
   // Cantonades tipus "target" per remarcar la posiciÃƒÆ’Ã‚Â³
-  const tcol = `rgba(255,255,255,${0.5 + 0.5 * p})`;
-  const tlen = hw * 0.35;
-  ctx.strokeStyle = tcol;
-  ctx.lineWidth   = 1.5;
+  const tlen = CELL * 0.22;
   ctx.beginPath();
-  // cantonada superior
-  ctx.moveTo(ax - tlen * 0.6, ay - hh + tlen * 0.4);
-  ctx.lineTo(ax,               ay - hh);
-  ctx.lineTo(ax + tlen * 0.6,  ay - hh + tlen * 0.4);
-  // cantonada dreta
-  ctx.moveTo(ax + hw - tlen * 0.4, ay - tlen * 0.6);
-  ctx.lineTo(ax + hw,              ay);
-  ctx.lineTo(ax + hw - tlen * 0.4, ay + tlen * 0.6);
-  // cantonada inferior
-  ctx.moveTo(ax + tlen * 0.6,  ay + hh - tlen * 0.4);
-  ctx.lineTo(ax,               ay + hh);
-  ctx.lineTo(ax - tlen * 0.6,  ay + hh - tlen * 0.4);
-  // cantonada esquerra
-  ctx.moveTo(ax - hw + tlen * 0.4, ay + tlen * 0.6);
-  ctx.lineTo(ax - hw,              ay);
-  ctx.lineTo(ax - hw + tlen * 0.4, ay - tlen * 0.6);
+  ctx.moveTo(rect.x + tlen, rect.y);
+  ctx.lineTo(rect.x, rect.y);
+  ctx.lineTo(rect.x, rect.y + tlen);
+  ctx.moveTo(rect.x + rect.w - tlen, rect.y);
+  ctx.lineTo(rect.x + rect.w, rect.y);
+  ctx.lineTo(rect.x + rect.w, rect.y + tlen);
+  ctx.moveTo(rect.x + rect.w - tlen, rect.y + rect.h);
+  ctx.lineTo(rect.x + rect.w, rect.y + rect.h);
+  ctx.lineTo(rect.x + rect.w, rect.y + rect.h - tlen);
+  ctx.moveTo(rect.x + tlen, rect.y + rect.h);
+  ctx.lineTo(rect.x, rect.y + rect.h);
+  ctx.lineTo(rect.x, rect.y + rect.h - tlen);
   ctx.stroke();
-  ctx.globalAlpha = 1;
+  ctx.restore();
 
-  const bob = Math.sin(foodPhase * 1.8) * CELL * 0.024;
+  const bob = Math.sin(foodPhase * 1.8) * CELL * 0.032;
   ctx.save();
-  ctx.globalAlpha = 0.24 + 0.12 * p;
+  ctx.globalAlpha = 0.22 + 0.12 * p;
   ctx.fillStyle = '#34070f';
   ctx.beginPath();
-  ctx.ellipse(ax, ay + hh * 0.18, hw * 0.34, hh * 0.24, 0, 0, Math.PI * 2);
+  ctx.ellipse(center.x, center.y + CELL * 0.12, CELL * 0.22, CELL * 0.14, 0, 0, Math.PI * 2);
   ctx.fill();
   ctx.restore();
 
-  drawAppleGlyph(ax, ay - hh * 0.16 - bob, CELL * 0.043, p, Math.sin(foodPhase) * 0.35);
+  drawAppleGlyph(center.x, center.y - CELL * 0.05 - bob, CELL * 0.06, p, Math.sin(foodPhase) * 0.35);
 }
 
 function drawFoodFPS(cx, cz, viewDir, fl) {
@@ -1327,8 +1400,8 @@ function drawISOCompass() {
 
   for (const k of keys) {
     // DirecciÃƒÆ’Ã‚Â³ visual en pantalla: isoX ÃƒÂ¢Ã‹â€ Ã‚Â (gx-gy), isoY ÃƒÂ¢Ã‹â€ Ã‚Â (gx+gy)*ISO_YS
-    const sx = k.gx - k.gy;
-    const sy = (k.gx + k.gy) * ISO_YS;
+    const sx = k.gx;
+    const sy = k.gy;
     const len = Math.sqrt(sx * sx + sy * sy);
     const nx = sx / len, ny = sy / len;
 

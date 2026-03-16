@@ -292,6 +292,24 @@ function requireDatabase(env) {
   return env.NOVARENA_DB;
 }
 
+function isMissingTableError(error, tableName) {
+  var message = error && error.message ? String(error.message) : '';
+  return message.indexOf('no such table') >= 0
+    && (!tableName || message.indexOf(String(tableName)) >= 0);
+}
+
+async function safeGetCurrentChallenge(env) {
+  try {
+    return await getCurrentChallenge(env);
+  } catch (error) {
+    if (isMissingTableError(error, 'daily_challenges')) {
+      return null;
+    }
+
+    throw error;
+  }
+}
+
 function mapScoreRow(row) {
   if (!row) {
     return null;
@@ -500,7 +518,7 @@ export async function getCurrentProfile(env, options) {
       playerId,
       normalized.recentLimit || DEFAULT_PROFILE_RECENT_LIMIT
     ).all(),
-    getCurrentChallenge(env)
+    safeGetCurrentChallenge(env)
   ]);
   var bestGlobalRows = results[0] && Array.isArray(results[0].results) ? results[0].results : [];
   var bestPerGameRows = results[1] && Array.isArray(results[1].results) ? results[1].results : [];
@@ -525,18 +543,27 @@ export async function getCurrentProfile(env, options) {
 
   if (challenge) {
     challengeWindow = buildChallengeWindow(challenge.date);
-    challengeResult = await database.prepare(PROFILE_ACTIVE_CHALLENGE_RANK_QUERY).bind(
-      challenge.game,
-      challengeWindow.start,
-      challengeWindow.end,
-      playerId
-    ).all();
-    challengeRows = challengeResult && Array.isArray(challengeResult.results)
-      ? challengeResult.results
-      : [];
-    activeChallenge = Object.assign({
-      challenge: challenge
-    }, mapProfileChallengeEntry(challengeRows[0] || null));
+    try {
+      challengeResult = await database.prepare(PROFILE_ACTIVE_CHALLENGE_RANK_QUERY).bind(
+        challenge.game,
+        challengeWindow.start,
+        challengeWindow.end,
+        playerId
+      ).all();
+      challengeRows = challengeResult && Array.isArray(challengeResult.results)
+        ? challengeResult.results
+        : [];
+      activeChallenge = Object.assign({
+        challenge: challenge
+      }, mapProfileChallengeEntry(challengeRows[0] || null));
+    } catch (error) {
+      activeChallenge = {
+        challenge: challenge,
+        rank: null,
+        totalPlayers: 0,
+        entry: null
+      };
+    }
   }
 
   return {
