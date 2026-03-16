@@ -64,6 +64,21 @@
       background:rgba(0,255,255,.15);
       box-shadow:0 0 44px rgba(0,255,255,.7),inset 0 0 30px rgba(0,255,255,.12);
     }
+    .home-link {
+      position: fixed; top: 16px; left: 16px; z-index: 60;
+      display: inline-flex; align-items: center; justify-content: center;
+      padding: 10px 16px; border: 1px solid rgba(0,255,255,.45);
+      background: rgba(0,0,15,.8); color: #0ff; text-decoration: none;
+      text-transform: uppercase; letter-spacing: 3px; font-size: 10px; font-weight: bold;
+      box-shadow: 0 0 18px rgba(0,255,255,.22);
+      transition: transform .2s, box-shadow .2s, border-color .2s, background .2s;
+    }
+    .home-link:hover {
+      transform: translateY(-1px);
+      background: rgba(0,255,255,.12);
+      border-color: #f0f;
+      box-shadow: 0 0 24px rgba(255,0,255,.24);
+    }
     .score-big { color:#fff; font-size:clamp(20px,4vw,28px); margin:10px 0; }
     .score-big span { color:#0ff; text-shadow:0 0 12px #0ff; }
     .best-line { color:#f0f; font-size:clamp(12px,2vw,16px); text-shadow:0 0 8px #f0f; margin-bottom:38px; }
@@ -124,9 +139,18 @@
       0%   { opacity:.75; }
       100% { opacity:0; }
     }
+
+    @media (max-width: 640px) {
+      .home-link {
+        top: 12px; left: 12px; padding: 8px 12px;
+        font-size: 9px; letter-spacing: 2px;
+      }
+    }
   </style>
 </head>
 <body>
+
+<a class="home-link" href="../../index.html" aria-label="Tornar a la pagina principal">&larr; Inici</a>
 
 <canvas id="canvas"></canvas>
 
@@ -1599,7 +1623,6 @@ animate();
 </script>
 </body>
 </html>
-
 
 
 

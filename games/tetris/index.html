@@ -249,6 +249,41 @@
     body.matrix #pause-btn:hover { color: #ff8a96; border-color: #ff5a72; background: rgba(255,40,70,0.08); text-shadow: 0 0 8px rgba(255,70,90,0.6); }
     body.matrix #pause-btn.active { color: #ffd0d0; border-color: #ff9aa6; background: rgba(255,100,120,0.12); text-shadow: 0 0 8px rgba(255,130,145,0.65); }
 
+    .home-link {
+      position: fixed; top: 18px; left: 18px; z-index: 120;
+      display: inline-flex; align-items: center; justify-content: center;
+      padding: 10px 16px; border: 1px solid rgba(0,255,255,0.35);
+      background: rgba(0,10,30,0.82); color: var(--cyan);
+      text-decoration: none; text-transform: uppercase;
+      letter-spacing: 3px; font-size: 10px; font-weight: 700;
+      box-shadow: 0 0 16px rgba(0,255,255,0.16);
+      transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+    }
+    .home-link:hover {
+      transform: translateY(-1px);
+      border-color: var(--cyan);
+      box-shadow: 0 0 24px rgba(0,255,255,0.28);
+    }
+    body.classic .home-link {
+      font-family: monospace; color: #fff; background: #111; border-color: #666; box-shadow: 3px 3px 0 #000;
+    }
+    body.classic .home-link:hover { border-color: #aaa; box-shadow: 3px 3px 0 #000; }
+    body.natural .home-link {
+      font-family: monospace; color: #a8d870; background: rgba(8,20,5,0.94); border-color: #4a7a3a; box-shadow: 0 0 16px rgba(90,130,40,0.2);
+    }
+    body.natural .home-link:hover { border-color: #7aaa5a; box-shadow: 0 0 20px rgba(90,130,40,0.28); }
+    body.matrix .home-link {
+      font-family: 'Share Tech Mono', monospace; color: #ff8a96; background: rgba(22,0,4,0.92); border-color: rgba(255,90,110,0.35); box-shadow: 0 0 18px rgba(255,70,90,0.2);
+    }
+    body.matrix .home-link:hover { border-color: #ff5a72; box-shadow: 0 0 24px rgba(255,70,90,0.3); }
+
+    @media (max-width: 700px) {
+      .home-link {
+        top: 12px; left: 12px; padding: 8px 12px;
+        font-size: 9px; letter-spacing: 2px;
+      }
+    }
+
     #pause-overlay { position: absolute; inset: 0; display: none; flex-direction: column; justify-content: center; align-items: center; gap: 20px; z-index: 10; background: rgba(2,2,20,0.82); backdrop-filter: blur(3px); }
     #pause-overlay.visible { display: flex; }
     body.classic #pause-overlay { background: rgba(0,0,0,0.80); backdrop-filter: none; }
@@ -303,6 +338,8 @@
   </style>
 </head>
 <body>
+
+<a class="home-link" href="../../index.html" aria-label="Tornar a la pagina principal">&larr; Inici</a>
 
 <canvas id="stars"></canvas>
 <canvas id="plants"></canvas>
@@ -1180,7 +1217,6 @@ document.getElementById('quit-btn').addEventListener('click', ()=>{
 </script>
 </body>
 </html>
-
 
 
 
