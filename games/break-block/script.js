@@ -535,6 +535,7 @@ function updateExplosions(timestamp) {
 function finishGame() {
   state.running = false;
   state.gameOver = true;
+  console.log('NOVARENA GAME OVER', 'break-block', state.score);
   if (window.NovarenaBreakBlockBridge) {
     window.NovarenaBreakBlockBridge.submitScore(state.score);
   }
@@ -1093,5 +1094,6 @@ window.addEventListener("resize", resizeGameLayout);
 resizeGameLayout();
 resetGame();
 render();
+
 
 

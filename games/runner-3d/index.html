@@ -1444,6 +1444,7 @@ function animate() {
           hLives.textContent = 'â¤ï¸'.repeat(lives) + 'ðŸ–¤'.repeat(3-lives);
           if (lives <= 0) {
             if (score>best) { best=score; localStorage.setItem('neon_best',best); }
+            console.log('NOVARENA GAME OVER', 'runner3d', score);
             state='dead';
             if (window.NovarenaRunnerBridge) {
               window.NovarenaRunnerBridge.submitScore(score);
@@ -1598,5 +1599,7 @@ animate();
 </script>
 </body>
 </html>
+
+
 
 

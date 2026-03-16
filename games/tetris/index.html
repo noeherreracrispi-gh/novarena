@@ -787,6 +787,7 @@ function doLines(){
 
 function die(){
   dead=true; clearInterval(loop); sfxOver(); setPaused(false);
+  console.log('NOVARENA GAME OVER', 'tetris', score);
   if (window.NovarenaTetrisBridge) {
     window.NovarenaTetrisBridge.submitScore(score);
   }
@@ -1179,6 +1180,7 @@ document.getElementById('quit-btn').addEventListener('click', ()=>{
 </script>
 </body>
 </html>
+
 
 
 
