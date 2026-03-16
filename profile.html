@@ -4,10 +4,12 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Novarena | Profile</title>
-  <meta name="description" content="Base futura per al perfil de jugador de Novarena.">
+  <meta name="description" content="Perfil bàsic de jugador de Novarena connectat a les scores reals del SDK.">
   <link rel="stylesheet" href="assets/css/site.css">
   <script src="assets/js/i18n.js" defer></script>
   <script src="assets/js/site.js" defer></script>
+  <script src="assets/js/novarena-sdk.js" defer></script>
+  <script src="assets/js/profile-page.js" defer></script>
 </head>
 <body>
   <header class="site-header">
@@ -36,31 +38,58 @@
   </header>
 
   <main class="shell page-main">
-    <section class="page-hero">
-      <p class="eyebrow" data-i18n="pages.profile.eyebrow">Reserva de plataforma</p>
-      <h1><span data-i18n="pages.profile.title">Profile</span> <span data-i18n="pages.profile.accent">preparat per al seguent salt.</span></h1>
-      <p data-i18n="pages.profile.body">Aqui hi podreu afegir avatar, dades del jugador, progressio i preferencies sense tocar l'estructura dels jocs.</p>
+    <section class="page-hero" data-profile-hero>
+      <p class="loading-state">Loading profile...</p>
     </section>
 
-    <section class="feature-grid">
+    <section class="feature-grid" data-profile-stats>
       <article class="feature-card">
-        <h3 data-i18n="pages.profile.cards.identityTitle">Identitat</h3>
-        <p data-i18n="pages.profile.cards.identityBody">Nom public, avatar i presentacio curta del jugador.</p>
+        <p class="loading-state">Loading stats...</p>
       </article>
-      <article class="feature-card">
-        <h3 data-i18n="pages.profile.cards.progressTitle">Progressio</h3>
-        <p data-i18n="pages.profile.cards.progressBody">Historial de punts, jocs preferits i objectius desbloquejats.</p>
-      </article>
-      <article class="feature-card">
-        <h3 data-i18n="pages.profile.cards.settingsTitle">Configuracio</h3>
-        <p data-i18n="pages.profile.cards.settingsBody">Base per a preferencies, privacitat i connexio amb la comunitat.</p>
-      </article>
+    </section>
+
+    <section class="section-block">
+      <div class="section-head">
+        <div>
+          <p class="eyebrow">Games</p>
+          <h2 data-profile-best-games-title>Best by game</h2>
+        </div>
+        <span class="game-category"><span data-profile-best-games-count>0</span> entries</span>
+      </div>
+      <div class="panel" data-profile-best-games>
+        <p class="loading-state">Loading best scores...</p>
+      </div>
+    </section>
+
+    <section class="section-block">
+      <div class="section-head">
+        <div>
+          <p class="eyebrow">Activity</p>
+          <h2 data-profile-recent-title>Recent activity</h2>
+        </div>
+        <span class="game-category"><span data-profile-recent-count>0</span> entries</span>
+      </div>
+      <div class="panel" data-profile-recent>
+        <p class="loading-state">Loading activity...</p>
+      </div>
+    </section>
+
+    <section class="section-block">
+      <div class="section-head">
+        <div>
+          <p class="eyebrow">Challenge</p>
+          <h2 data-profile-challenge-title>Daily challenge</h2>
+        </div>
+      </div>
+      <div class="panel" data-profile-challenge>
+        <p class="loading-state">Loading challenge...</p>
+      </div>
     </section>
   </main>
 
   <footer class="site-footer">
     <p>Novarena <span data-current-year></span></p>
-    <p data-i18n="pages.profile.footer">Pagina reservada per al perfil, sense dependencies noves.</p>
+    <p>Basic player profile powered by the same SDK contract used by the games.</p>
   </footer>
 </body>
 </html>

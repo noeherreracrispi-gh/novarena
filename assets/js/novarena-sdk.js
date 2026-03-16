@@ -8,6 +8,7 @@
   var LEADERBOARD_CACHE_KEY = 'novarena_leaderboard_cache_v1';
   var CURRENT_CHALLENGE_CACHE_KEY = 'novarena_current_challenge_cache_v1';
   var CHALLENGE_LEADERBOARD_CACHE_KEY = 'novarena_challenge_leaderboard_cache_v1';
+  var CURRENT_PROFILE_CACHE_KEY = 'novarena_current_profile_cache_v1';
   var GAME_ID_ALIASES = {
     'runner-3d': 'runner3d'
   };
@@ -18,6 +19,8 @@
   var DEFAULT_STORAGE_MODE = 'local';
   var DEFAULT_REMOTE_LIMIT = 10;
   var MAX_REMOTE_LIMIT = 100;
+  var DEFAULT_PROFILE_RECENT_LIMIT = 6;
+  var MAX_PROFILE_RECENT_LIMIT = 20;
   var contextCache = {};
   var api = null;
   var runtimeConfig = null;
@@ -113,6 +116,47 @@
     return {
       challenge: normalizeChallenge(payload && payload.challenge),
       entries: normalizeEntryList(payload && payload.entries)
+    };
+  }
+
+  function normalizePlayerProfile(player) {
+    if (!player || !player.id) {
+      return null;
+    }
+
+    return {
+      id: String(player.id),
+      name: String(player.name || 'Guest'),
+      type: String(player.type || 'guest'),
+      source: String(player.source || 'local')
+    };
+  }
+
+  function normalizeProfileChallenge(payload) {
+    var rank = Number(payload && payload.rank);
+    var totalPlayers = Number(payload && payload.totalPlayers);
+
+    return {
+      challenge: normalizeChallenge(payload && payload.challenge),
+      rank: Number.isFinite(rank) && rank > 0 ? Math.floor(rank) : null,
+      totalPlayers: Number.isFinite(totalPlayers) && totalPlayers > 0 ? Math.floor(totalPlayers) : 0,
+      entry: normalizeStoredEntry(payload && payload.entry)
+    };
+  }
+
+  function normalizeCurrentProfile(payload) {
+    var player = normalizePlayerProfile(payload && payload.player);
+
+    if (!player) {
+      return null;
+    }
+
+    return {
+      player: player,
+      bestGlobalEntry: normalizeStoredEntry(payload && payload.bestGlobalEntry),
+      bestPerGame: normalizeEntryList(payload && payload.bestPerGame),
+      recentEntries: normalizeEntryList(payload && payload.recentEntries),
+      activeChallenge: normalizeProfileChallenge(payload && payload.activeChallenge)
     };
   }
 
@@ -366,6 +410,20 @@
     writeJsonStorage(CHALLENGE_LEADERBOARD_CACHE_KEY, cache || {});
   }
 
+  function readCurrentProfileCache() {
+    var cache = readJsonStorage(CURRENT_PROFILE_CACHE_KEY, {});
+
+    if (!cache || typeof cache !== 'object' || Array.isArray(cache)) {
+      return {};
+    }
+
+    return cache;
+  }
+
+  function writeCurrentProfileCache(cache) {
+    writeJsonStorage(CURRENT_PROFILE_CACHE_KEY, cache || {});
+  }
+
   function normalizeLeaderboardOptions(options) {
     var normalized = {};
 
@@ -402,6 +460,27 @@
     ].join('|');
   }
 
+  function normalizeProfileOptions(options) {
+    var normalized = options || {};
+    var recentLimit = Number(normalized.recentLimit);
+
+    return {
+      recentLimit: Number.isFinite(recentLimit) && recentLimit > 0
+        ? Math.min(Math.floor(recentLimit), MAX_PROFILE_RECENT_LIMIT)
+        : DEFAULT_PROFILE_RECENT_LIMIT
+    };
+  }
+
+  function currentProfileCacheKey(player, options) {
+    var normalizedPlayer = normalizePlayerProfile(player) || getPlayer();
+    var normalizedOptions = normalizeProfileOptions(options);
+
+    return [
+      normalizedPlayer.id,
+      normalizedOptions.recentLimit
+    ].join('|');
+  }
+
   function getCachedLeaderboard(options) {
     var cache = readLeaderboardCache();
     var entries = cache[leaderboardCacheKey(options)];
@@ -430,6 +509,23 @@
     var cache = readChallengeLeaderboardCache();
     cache[challengeLeaderboardCacheKey(options)] = normalizeChallengeLeaderboardPayload(payload);
     writeChallengeLeaderboardCache(cache);
+  }
+
+  function getCachedCurrentProfile(player, options) {
+    var cache = readCurrentProfileCache();
+    var payload = cache[currentProfileCacheKey(player, options)];
+
+    if (!payload || typeof payload !== 'object') {
+      return null;
+    }
+
+    return normalizeCurrentProfile(payload);
+  }
+
+  function setCachedCurrentProfile(player, options, payload) {
+    var cache = readCurrentProfileCache();
+    cache[currentProfileCacheKey(player, options)] = normalizeCurrentProfile(payload);
+    writeCurrentProfileCache(cache);
   }
 
   function getFallbackChallenge(options) {
@@ -476,6 +572,24 @@
     return Object.keys(bestByPlayer).map(function (playerId) {
       return cloneObject(bestByPlayer[playerId]);
     });
+  }
+
+  function dedupeBestScoresByGame(scores) {
+    var bestByGame = {};
+
+    sortScores(normalizeEntryList(scores), 'desc').forEach(function (entry) {
+      var gameId = canonicalGameId(entry.game);
+
+      if (!gameId || bestByGame[gameId]) {
+        return;
+      }
+
+      bestByGame[gameId] = cloneObject(entry);
+    });
+
+    return sortScores(Object.keys(bestByGame).map(function (gameId) {
+      return bestByGame[gameId];
+    }), 'desc');
   }
 
   function buildLeaderboard(scores, options) {
@@ -527,6 +641,64 @@
         return cloneObject(entry);
       })
     };
+  }
+
+  function buildChallengeEntries(scores, challenge) {
+    var normalizedChallenge = normalizeChallenge(challenge);
+    var window = normalizedChallenge ? buildChallengeWindow(normalizedChallenge.date) : null;
+
+    if (!normalizedChallenge || !window) {
+      return [];
+    }
+
+    return sortScores(dedupeBestScores(normalizeEntryList(scores).filter(function (entry) {
+      var createdAt = String(entry.createdAt || '');
+      return canonicalGameId(entry.game) === normalizedChallenge.game
+        && createdAt >= window.start
+        && createdAt < window.end;
+    }), 'desc'), 'desc').map(function (entry) {
+      return cloneObject(entry);
+    });
+  }
+
+  function sortRecentScores(scores) {
+    return normalizeEntryList(scores).slice().sort(function (left, right) {
+      var leftDate = String(left.createdAt || '');
+      var rightDate = String(right.createdAt || '');
+
+      if (leftDate !== rightDate) {
+        return rightDate.localeCompare(leftDate);
+      }
+
+      return right.score - left.score;
+    });
+  }
+
+  function buildCurrentProfileFromScores(scores, player, challenge, options) {
+    var normalizedPlayer = normalizePlayerProfile(player) || getPlayer();
+    var normalizedOptions = normalizeProfileOptions(options);
+    var playerScores = normalizeEntryList(scores).filter(function (entry) {
+      return entry.playerId === normalizedPlayer.id;
+    });
+    var bestGlobalEntry = sortScores(playerScores, 'desc')[0] || null;
+    var challengeEntries = buildChallengeEntries(scores, challenge);
+    var challengeIndex = challengeEntries.findIndex(function (entry) {
+      return entry.playerId === normalizedPlayer.id;
+    });
+    var challengeEntry = challengeIndex >= 0 ? challengeEntries[challengeIndex] : null;
+
+    return normalizeCurrentProfile({
+      player: normalizedPlayer,
+      bestGlobalEntry: bestGlobalEntry,
+      bestPerGame: dedupeBestScoresByGame(playerScores),
+      recentEntries: sortRecentScores(playerScores).slice(0, normalizedOptions.recentLimit),
+      activeChallenge: {
+        challenge: normalizeChallenge(challenge),
+        rank: challengeIndex >= 0 ? challengeIndex + 1 : null,
+        totalPlayers: challengeEntries.length,
+        entry: challengeEntry
+      }
+    });
   }
 
   function buildApiUrl(path, query) {
@@ -644,6 +816,24 @@
           challenge: null,
           entries: []
         });
+      },
+
+      getCurrentProfile: function (options) {
+        return buildCurrentProfileFromScores(
+          readScoresLocal(),
+          getPlayer(),
+          readCurrentChallengeCache(),
+          options
+        );
+      },
+
+      getCurrentProfileAsync: function (options) {
+        return Promise.resolve(buildCurrentProfileFromScores(
+          readScoresLocal(),
+          getPlayer(),
+          readCurrentChallengeCache(),
+          options
+        ));
       }
     };
   }
@@ -768,6 +958,73 @@
             entries: []
           };
         });
+      },
+
+      getCurrentProfile: function (options) {
+        var player = getPlayer();
+        var cached = getCachedCurrentProfile(player, options);
+
+        if (cached) {
+          return cached;
+        }
+
+        return runtimeConfig.remoteFallback
+          ? buildCurrentProfileFromScores(readScoresLocal(), player, readCurrentChallengeCache(), options)
+          : normalizeCurrentProfile({
+            player: player,
+            bestGlobalEntry: null,
+            bestPerGame: [],
+            recentEntries: [],
+            activeChallenge: {
+              challenge: readCurrentChallengeCache(),
+              rank: null,
+              totalPlayers: 0,
+              entry: null
+            }
+          });
+      },
+
+      getCurrentProfileAsync: function (options) {
+        var player = getPlayer();
+        var normalized = normalizeProfileOptions(options);
+
+        return requestJson('GET', 'profile/current', {
+          query: {
+            playerId: player.id,
+            playerName: player.name,
+            recentLimit: normalized.recentLimit
+          }
+        }).then(function (payload) {
+          var profile = normalizeCurrentProfile(payload && payload.profile);
+
+          if (profile && profile.activeChallenge && profile.activeChallenge.challenge) {
+            writeCurrentChallengeCache(profile.activeChallenge.challenge);
+          }
+
+          setCachedCurrentProfile(player, normalized, profile);
+          return profile;
+        }).catch(function () {
+          var cached = getCachedCurrentProfile(player, normalized);
+
+          if (cached) {
+            return cached;
+          }
+
+          return runtimeConfig.remoteFallback
+            ? buildCurrentProfileFromScores(readScoresLocal(), player, readCurrentChallengeCache(), normalized)
+            : normalizeCurrentProfile({
+              player: player,
+              bestGlobalEntry: null,
+              bestPerGame: [],
+              recentEntries: [],
+              activeChallenge: {
+                challenge: readCurrentChallengeCache(),
+                rank: null,
+                totalPlayers: 0,
+                entry: null
+              }
+            });
+        });
       }
     };
   }
@@ -859,6 +1116,39 @@
     return Promise.resolve(getChallengeLeaderboard(normalized));
   }
 
+  function getCurrentProfile(options) {
+    var provider = getProvider();
+    var normalized = normalizeProfileOptions(options);
+
+    if (typeof provider.getCurrentProfile === 'function') {
+      return provider.getCurrentProfile(normalized);
+    }
+
+    return normalizeCurrentProfile({
+      player: getPlayer(),
+      bestGlobalEntry: null,
+      bestPerGame: [],
+      recentEntries: [],
+      activeChallenge: {
+        challenge: null,
+        rank: null,
+        totalPlayers: 0,
+        entry: null
+      }
+    });
+  }
+
+  function getCurrentProfileAsync(options) {
+    var provider = getProvider();
+    var normalized = normalizeProfileOptions(options);
+
+    if (typeof provider.getCurrentProfileAsync === 'function') {
+      return provider.getCurrentProfileAsync(normalized);
+    }
+
+    return Promise.resolve(getCurrentProfile(normalized));
+  }
+
   function getScoresLocal() {
     return readScoresLocal().map(function (entry) {
       return cloneObject(entry);
@@ -887,6 +1177,8 @@
     getCurrentChallengeAsync: getCurrentChallengeAsync,
     getChallengeLeaderboard: getChallengeLeaderboard,
     getChallengeLeaderboardAsync: getChallengeLeaderboardAsync,
+    getCurrentProfile: getCurrentProfile,
+    getCurrentProfileAsync: getCurrentProfileAsync,
     getPlayer: getPlayer,
     getScoresLocal: getScoresLocal,
     getLanguage: getLanguage,

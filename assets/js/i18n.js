@@ -768,6 +768,9 @@ function setLanguage(lang, persist) {
   if (typeof renderCurrentChallenge === 'function') {
     renderCurrentChallenge();
   }
+  if (typeof renderProfilePage === 'function') {
+    renderProfilePage();
+  }
 }
 
 function initLanguageSelector() {
