@@ -12,6 +12,7 @@ Estructura base del portal:
 - `data/games.json`: metadades del cataleg
 - `data/players.json`: dades de jugadors i puntuacions
 - `functions/`: API edge per scores i leaderboard a Cloudflare Pages Functions
+- `wrangler.jsonc`: configuracio minima per Pages + D1
 - `cloudflare/schema.sql`: esquema inicial per D1
 - `docs/cloudflare-scores.md`: guia de desplegament i proves del backend remot
 

@@ -1,0 +1,14 @@
+{
+  // Cloudflare Pages project config for NOVARENA.
+  // Replace the placeholder database_id after creating the D1 database.
+  "name": "novarena",
+  "compatibility_date": "2026-03-16",
+  "pages_build_output_dir": ".",
+  "d1_databases": [
+    {
+      "binding": "NOVARENA_DB",
+      "database_name": "novarena-scores",
+      "database_id": "REPLACE_WITH_D1_DATABASE_ID"
+    }
+  ]
+}

@@ -5,7 +5,7 @@ import {
   normalizeScorePayload,
   optionsResponse,
   readJsonBody
-} from '../_shared/novarena-api.js';
+} from '../../cloudflare/lib/novarena-api.js';
 
 export function onRequestOptions() {
   return optionsResponse();
