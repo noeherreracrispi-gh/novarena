@@ -121,7 +121,19 @@
     return normalizeGameId(params.get('game'));
   }
 
-  function renderLeaderboard() {
+  function loadEntries(options) {
+    if (!global.Novarena) {
+      return Promise.resolve([]);
+    }
+
+    if (typeof global.Novarena.getLeaderboardAsync === 'function') {
+      return global.Novarena.getLeaderboardAsync(options);
+    }
+
+    return Promise.resolve(global.Novarena.getLeaderboard(options));
+  }
+
+  async function renderLeaderboard() {
     if (!global.Novarena || typeof global.Novarena.getLeaderboard !== 'function') {
       return;
     }
@@ -129,7 +141,7 @@
     var globalSection = document.querySelector('[data-sdk-leaderboard-global]');
     var gameSection = document.querySelector('[data-sdk-leaderboard-game]');
     var selectedGame = gameParam();
-    var globalEntries = global.Novarena.getLeaderboard({ game: null, limit: 10, order: 'desc' });
+    var globalEntries = await loadEntries({ game: null, limit: 10, order: 'desc' });
 
     renderSection(
       globalSection,
@@ -153,13 +165,24 @@
     renderSection(
       gameSection,
       formatGameLabel(selectedGame) + ' ' + t('nav.leaderboard', 'Leaderboard'),
-      global.Novarena.getLeaderboard({ game: selectedGame, limit: 10, order: 'desc' })
+      await loadEntries({ game: selectedGame, limit: 10, order: 'desc' })
     );
   }
 
   global.renderLeaderboard = renderLeaderboard;
 
   document.addEventListener('DOMContentLoaded', function () {
-    renderLeaderboard();
+    renderLeaderboard().catch(function () {
+      renderSection(
+        document.querySelector('[data-sdk-leaderboard-global]'),
+        t('leaderboard.sections.global', 'Global leaderboard'),
+        []
+      );
+      renderSection(
+        document.querySelector('[data-sdk-leaderboard-game]'),
+        t('leaderboard.sections.game', 'Game leaderboard'),
+        []
+      );
+    });
   });
 })(window);

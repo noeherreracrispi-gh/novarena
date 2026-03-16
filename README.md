@@ -11,6 +11,9 @@ Estructura base del portal:
 - `games/`: un directori per joc, amb els seus fitxers encapsulats
 - `data/games.json`: metadades del cataleg
 - `data/players.json`: dades de jugadors i puntuacions
+- `functions/`: API edge per scores i leaderboard a Cloudflare Pages Functions
+- `cloudflare/schema.sql`: esquema inicial per D1
+- `docs/cloudflare-scores.md`: guia de desplegament i proves del backend remot
 
 Criteri utilitzat:
 

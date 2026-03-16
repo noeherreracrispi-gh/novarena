@@ -51,10 +51,10 @@ Funcions disponibles:
   Retorna una `Promise` amb la metadata del joc. Intenta llegir primer `games/<game-id>/game.json` i, si no el troba, fa fallback a `data/games.json`.
 
 - `Novarena.submitScore(payload)`
-  Desa una puntuacio en el magatzem comu de plataforma a localStorage.
+  Desa una puntuacio en el magatzem comu de plataforma usant el provider actiu del SDK (`local` o `remote`).
 
 - `Novarena.getLeaderboard(gameId)`
-  Retorna el ranking local d'un joc ordenat de mes puntuacio a menys.
+  Retorna el ranking disponible via provider del SDK. En `remote`, la pagina de leaderboard pot fer refresh asinc via SDK sense tocar els jocs.
 
 ## Model de score comu
 
