@@ -1,15 +1,20 @@
 ﻿(function (global) {
   'use strict';
 
-  var SDK_VERSION = '1.0.0';
+  var SDK_VERSION = '1.1.0';
   var LANGUAGE_KEY = 'novarena_language';
   var PLAYER_KEY = 'novarena_guest_profile_v1';
   var SCORES_KEY = 'novarena_scores_v1';
   var contextCache = {};
+  var api = null;
 
   function resolveLanguage(lang) {
     var value = String(lang || '').toLowerCase().split('-')[0];
     return ['ca', 'es', 'en', 'it'].indexOf(value) >= 0 ? value : 'en';
+  }
+
+  function cloneObject(value) {
+    return JSON.parse(JSON.stringify(value));
   }
 
   function getSdkRoot() {
@@ -137,11 +142,11 @@
     var score = Number(payload && payload.score);
 
     if (!payload || !payload.game) {
-      throw new Error('Novarena.submitScore(payload) requires a game id.');
+      throw new Error('Novarena.submitScore(scoreData) requires a game id.');
     }
 
     if (!Number.isFinite(score)) {
-      throw new Error('Novarena.submitScore(payload) requires a numeric score.');
+      throw new Error('Novarena.submitScore(scoreData) requires a numeric score.');
     }
 
     return {
@@ -154,42 +159,132 @@
     };
   }
 
-  function readScores() {
+  function readScoresLocal() {
     var scores = readJsonStorage(SCORES_KEY, []);
     return Array.isArray(scores) ? scores : [];
   }
 
-  function writeScores(scores) {
+  function writeScoresLocal(scores) {
     writeJsonStorage(SCORES_KEY, scores);
   }
 
-  function submitScore(payload) {
-    var entry = normalizeScorePayload(payload);
-    var scores = readScores();
-    scores.push(entry);
-    writeScores(scores);
-    return entry;
+  function normalizeLeaderboardOptions(options) {
+    var normalized = {};
+
+    if (typeof options === 'string') {
+      normalized.game = options;
+    } else {
+      normalized = options || {};
+    }
+
+    var limit = Number(normalized.limit);
+    return {
+      game: normalized.game || null,
+      limit: Number.isFinite(limit) && limit > 0 ? Math.floor(limit) : 10,
+      order: normalized.order === 'asc' ? 'asc' : 'desc'
+    };
   }
 
-  function getLeaderboard(gameId) {
-    return readScores()
-      .filter(function (entry) {
-        return !gameId || entry.game === gameId;
-      })
-      .sort(function (left, right) {
-        if (right.score !== left.score) {
-          return right.score - left.score;
-        }
-        return String(right.createdAt).localeCompare(String(left.createdAt));
-      });
+  function sortScores(scores, order) {
+    return scores.slice().sort(function (left, right) {
+      if (left.score !== right.score) {
+        return order === 'asc' ? left.score - right.score : right.score - left.score;
+      }
+
+      return order === 'asc'
+        ? String(left.createdAt).localeCompare(String(right.createdAt))
+        : String(right.createdAt).localeCompare(String(left.createdAt));
+    });
   }
 
-  global.Novarena = {
-    version: SDK_VERSION,
-    getPlayer: getPlayer,
-    getLanguage: getLanguage,
-    getGameContext: getGameContext,
-    submitScore: submitScore,
-    getLeaderboard: getLeaderboard
+  function buildLeaderboard(scores, options) {
+    var normalized = normalizeLeaderboardOptions(options);
+    var filtered = scores.filter(function (entry) {
+      return !normalized.game || entry.game === normalized.game;
+    });
+
+    return sortScores(filtered, normalized.order).slice(0, normalized.limit).map(function (entry) {
+      return cloneObject(entry);
+    });
+  }
+
+  function createLocalStorageProvider() {
+    return {
+      submitScore: function (entry) {
+        var scores = readScoresLocal();
+        scores.push(entry);
+        writeScoresLocal(scores);
+        return cloneObject(entry);
+      },
+
+      getScores: function () {
+        return readScoresLocal().map(function (entry) {
+          return cloneObject(entry);
+        });
+      },
+
+      getLeaderboard: function (options) {
+        return buildLeaderboard(readScoresLocal(), options);
+      }
+    };
+  }
+
+  function createCloudflareAPIProvider() {
+    return {
+      submitScore: function () {
+        // Future integration point for Cloudflare Workers / Pages Functions:
+        // POST /api/score
+        throw new Error('CloudflareAPIProvider is not implemented yet.');
+      },
+
+      getScores: function () {
+        // Future integration point for remote readbacks.
+        // GET /api/leaderboard
+        throw new Error('CloudflareAPIProvider is not implemented yet.');
+      },
+
+      getLeaderboard: function () {
+        // Future integration point for remote leaderboards.
+        // GET /api/leaderboard?game=snake&limit=10&order=desc
+        throw new Error('CloudflareAPIProvider is not implemented yet.');
+      }
+    };
+  }
+
+  var providers = {
+    local: createLocalStorageProvider(),
+    remote: createCloudflareAPIProvider()
   };
+
+  function getProvider() {
+    return api && api.storageMode === 'remote' ? providers.remote : providers.local;
+  }
+
+  function submitScore(scoreData) {
+    var entry = normalizeScorePayload(scoreData);
+    return getProvider().submitScore(entry);
+  }
+
+  function getLeaderboard(options) {
+    return getProvider().getLeaderboard(normalizeLeaderboardOptions(options));
+  }
+
+  function getScoresLocal() {
+    return readScoresLocal().map(function (entry) {
+      return cloneObject(entry);
+    });
+  }
+
+  api = {
+    version: SDK_VERSION,
+    storageMode: 'local',
+    submitScore: submitScore,
+    getLeaderboard: getLeaderboard,
+    getPlayer: getPlayer,
+    getScoresLocal: getScoresLocal,
+    getLanguage: getLanguage,
+    getGameContext: getGameContext
+  };
+
+  global.Novarena = api;
 })(window);
