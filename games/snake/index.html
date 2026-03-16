@@ -1643,7 +1643,6 @@ function mainLoop(now) {
     drawParticles();
     drawScanlines();
     drawVignette();
-    drawISOCompass();
     drawCameraHint();
   }
 }
@@ -1669,7 +1668,6 @@ function bgLoop() {
     }
     drawScanlines();
     drawVignette();
-    if (STATE !== 'start') drawISOCompass();
     if (STATE !== 'start') drawCameraHint();
   }
 
