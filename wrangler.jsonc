@@ -8,7 +8,7 @@
     {
       "binding": "NOVARENA_DB",
       "database_name": "novarena-scores",
-      "database_id": "REPLACE_WITH_D1_DATABASE_ID"
+      "database_id": "a8e456ef-36fb-40fb-bfe2-06d400332540"
     }
   ]
 }
