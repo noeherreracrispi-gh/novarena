@@ -19,23 +19,38 @@ var CHALLENGE_BY_ID_QUERY = [
 ].join(' ');
 var CHALLENGE_LEADERBOARD_QUERY = [
   'SELECT id, game, player_id, player_name, score, score_type, created_at',
-  'FROM scores',
-  'WHERE game = ?1',
-  'AND created_at >= ?2',
-  'AND created_at < ?3',
+  'FROM (',
+  '  SELECT id, game, player_id, player_name, score, score_type, created_at,',
+  '         ROW_NUMBER() OVER (PARTITION BY player_id ORDER BY score DESC, created_at DESC) AS rn',
+  '  FROM scores',
+  '  WHERE game = ?1',
+  '  AND created_at >= ?2',
+  '  AND created_at < ?3',
+  ') ranked_scores',
+  'WHERE rn = 1',
   'ORDER BY score DESC, created_at DESC',
   'LIMIT ?4'
 ].join(' ');
 var GAME_LEADERBOARD_QUERY = [
   'SELECT id, game, player_id, player_name, score, score_type, created_at',
-  'FROM scores',
-  'WHERE game = ?1',
+  'FROM (',
+  '  SELECT id, game, player_id, player_name, score, score_type, created_at,',
+  '         ROW_NUMBER() OVER (PARTITION BY player_id ORDER BY score DESC, created_at DESC) AS rn',
+  '  FROM scores',
+  '  WHERE game = ?1',
+  ') ranked_scores',
+  'WHERE rn = 1',
   'ORDER BY score DESC, created_at DESC',
   'LIMIT ?2'
 ].join(' ');
 var GLOBAL_LEADERBOARD_QUERY = [
   'SELECT id, game, player_id, player_name, score, score_type, created_at',
-  'FROM scores',
+  'FROM (',
+  '  SELECT id, game, player_id, player_name, score, score_type, created_at,',
+  '         ROW_NUMBER() OVER (PARTITION BY player_id ORDER BY score DESC, created_at DESC) AS rn',
+  '  FROM scores',
+  ') ranked_scores',
+  'WHERE rn = 1',
   'ORDER BY score DESC, created_at DESC',
   'LIMIT ?1'
 ].join(' ');

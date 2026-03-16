@@ -459,13 +459,32 @@
     });
   }
 
+  function dedupeBestScores(scores, order) {
+    var normalizedOrder = order === 'asc' ? 'asc' : 'desc';
+    var bestByPlayer = {};
+
+    sortScores(normalizeEntryList(scores), normalizedOrder).forEach(function (entry) {
+      if (!entry.playerId) {
+        return;
+      }
+
+      if (!bestByPlayer[entry.playerId]) {
+        bestByPlayer[entry.playerId] = entry;
+      }
+    });
+
+    return Object.keys(bestByPlayer).map(function (playerId) {
+      return cloneObject(bestByPlayer[playerId]);
+    });
+  }
+
   function buildLeaderboard(scores, options) {
     var normalized = normalizeLeaderboardOptions(options);
     var filtered = normalizeEntryList(scores).filter(function (entry) {
       return !normalized.game || canonicalGameId(entry.game) === normalized.game;
     });
 
-    return sortScores(filtered, normalized.order).slice(0, normalized.limit).map(function (entry) {
+    return sortScores(dedupeBestScores(filtered, normalized.order), normalized.order).slice(0, normalized.limit).map(function (entry) {
       return cloneObject(entry);
     });
   }
@@ -499,12 +518,12 @@
 
     return {
       challenge: normalizedChallenge,
-      entries: sortScores(normalizeEntryList(scores).filter(function (entry) {
+      entries: sortScores(dedupeBestScores(normalizeEntryList(scores).filter(function (entry) {
         var createdAt = String(entry.createdAt || '');
         return canonicalGameId(entry.game) === normalizedChallenge.game
           && createdAt >= window.start
           && createdAt < window.end;
-      }), 'desc').slice(0, limit || DEFAULT_REMOTE_LIMIT).map(function (entry) {
+      }), 'desc'), 'desc').slice(0, limit || DEFAULT_REMOTE_LIMIT).map(function (entry) {
         return cloneObject(entry);
       })
     };
