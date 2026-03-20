@@ -1,0 +1,9 @@
+{
+  "id": "clicker",
+  "title": "Clicker",
+  "description": "Construeix un robot IA, compra millores i converteix un portatil vell en una maquina futurista.",
+  "path": "games/clicker/index.html",
+  "thumbnail": "assets/img/game-clicker.svg",
+  "category": "Idle",
+  "scoreType": "points"
+}

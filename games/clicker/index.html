@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="ca">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Clicker</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div class="page-shell">
+    <div class="game-shell">
+      <div class="minimal-hud">
+        <div class="hud-left">
+          <div class="hud-chip hud-money">
+            <span class="hud-label">€</span>
+            <strong id="moneyDisplay">0</strong>
+          </div>
+          <div class="hud-chip">
+            <span class="hud-label">/ clic</span>
+            <strong id="clickValueDisplay">1</strong>
+          </div>
+          <div class="hud-chip">
+            <span class="hud-label">/ s</span>
+            <strong id="autoValueDisplay">0</strong>
+          </div>
+          <div class="hud-chip hud-stage">
+            <span class="hud-label">Fase</span>
+            <strong id="stageNameDisplay">Portàtil vell</strong>
+          </div>
+        </div>
+
+        <div class="hud-actions">
+          <button id="resetButton" class="hud-button danger" type="button">Reset</button>
+        </div>
+      </div>
+
+      <main class="center-stage">
+        <div id="scene" class="scene stage-1">
+          <div class="ambient ambient-left"></div>
+          <div class="ambient ambient-right"></div>
+
+          <div id="pcButton" class="pc-button" role="button" tabindex="0" aria-label="Clica per activar el robot i guanyar diners">
+            <div class="setup-stage-badge" id="setupBadge">Fase 1</div>
+            <div class="floating-layer" id="floatingLayer"></div>
+            <div class="robot-upgrade-layer" id="robotUpgradeLayer"></div>
+            <div class="room-glow"></div>
+            <div class="lab-platform"></div>
+            <div class="starter-laptop">
+              <div class="laptop-lid">
+                <div class="laptop-screen-glow"></div>
+              </div>
+              <div class="laptop-base"></div>
+            </div>
+
+            <div class="robot-lab">
+              <div class="energy-ring energy-ring-back"></div>
+              <div class="drone drone-left"></div>
+              <div class="drone drone-right"></div>
+              <div class="satellite-panel satellite-left"></div>
+              <div class="satellite-panel satellite-right"></div>
+              <div class="throne"></div>
+
+              <div class="robot-core">
+                <div class="robot-antenna"></div>
+                <div class="robot-head">
+                  <div class="head-shell"></div>
+                  <div class="robot-eyes">
+                    <span class="eye eye-left"></span>
+                    <span class="eye eye-right"></span>
+                  </div>
+                  <div class="robot-mouth"></div>
+                  <div class="visor-crack"></div>
+                </div>
+
+                <div class="robot-neck"></div>
+
+                <div class="robot-body">
+                  <div class="shoulder shoulder-left"></div>
+                  <div class="shoulder shoulder-right"></div>
+                  <div class="chest-core"></div>
+                  <div class="chest-strip chest-strip-left"></div>
+                  <div class="chest-strip chest-strip-right"></div>
+                </div>
+
+                <div class="robot-arm arm-left">
+                  <span class="arm-segment"></span>
+                  <span class="robot-hand"></span>
+                </div>
+
+                <div class="robot-arm arm-right">
+                  <span class="arm-segment"></span>
+                  <span class="robot-hand"></span>
+                </div>
+
+                <div class="robot-leg leg-left">
+                  <span class="leg-segment"></span>
+                  <span class="robot-foot"></span>
+                </div>
+
+                <div class="robot-leg leg-right">
+                  <span class="leg-segment"></span>
+                  <span class="robot-foot"></span>
+                </div>
+              </div>
+
+              <div class="energy-ring energy-ring-front"></div>
+            </div>
+          </div>
+        </div>
+      </main>
+
+      <aside id="shopDrawer" class="shop-drawer shop-sidebar">
+        <div class="shop-drawer-header">
+          <div class="shop-tabs">
+            <button class="tab-button active" data-tab="production" type="button">Botiga</button>
+            <button class="tab-button" data-tab="hardware" type="button">Peces</button>
+          </div>
+        </div>
+
+        <div class="shop-scroll">
+          <div class="shop-section active" data-tab-panel="production">
+            <div id="productionShop" class="shop-list"></div>
+          </div>
+          <div class="shop-section" data-tab-panel="hardware">
+            <div id="hardwareShop" class="shop-list"></div>
+          </div>
+        </div>
+      </aside>
+    </div>
+  </div>
+
+  <template id="shopItemTemplate">
+    <button class="shop-item" type="button">
+      <div class="shop-main">
+        <div class="shop-topline">
+          <strong class="shop-name"></strong>
+          <span class="shop-price"></span>
+        </div>
+      </div>
+      <div class="shop-meta">
+        <span class="shop-effect"></span>
+        <span class="shop-count"></span>
+      </div>
+    </button>
+  </template>
+
+  <script defer src="../../assets/js/novarena-sdk.js"></script>
+  <script defer src="game.js"></script>
+  <script defer src="script.js"></script>
+</body>
+</html>

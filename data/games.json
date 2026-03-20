@@ -32,5 +32,23 @@
     "path": "games/break-block/index.html",
     "thumbnail": "assets/img/game-break-block.svg",
     "category": "Arcade"
+  },
+  {
+    "id": "clicker",
+    "title": "Clicker",
+    "description": "Construeix un robot IA, compra millores i converteix un portatil vell en una maquina futurista.",
+    "path": "games/clicker/index.html",
+    "thumbnail": "assets/img/game-clicker.svg",
+    "category": "Idle",
+    "scoreType": "points"
+  },
+  {
+    "id": "last-row-trouble",
+    "title": "Last Row Trouble",
+    "description": "Escapa't de l'ultima fila, completa missions trapelles i torna al teu seient abans que el professor et descobreixi.",
+    "path": "games/last-row-trouble/index.html",
+    "thumbnail": "assets/img/game-last-row-trouble.svg",
+    "category": "Stealth",
+    "scoreType": "points"
   }
 ]

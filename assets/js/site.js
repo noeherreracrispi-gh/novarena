@@ -2,7 +2,9 @@
   { id: 'tetris', title: 'Tetris', description: 'Place the pieces, clear lines and keep the pressure under control round after round.', path: 'games/tetris/index.html', thumbnail: 'assets/img/game-tetris.svg', category: 'Puzzle' },
   { id: 'snake', title: 'Snake', description: 'Eat, grow and do not trap yourself. This classic is still a reflex machine.', path: 'games/snake/index.html', thumbnail: 'assets/img/game-snake.svg', category: 'Classic' },
   { id: 'runner3d', title: 'Neon Runner 3D', description: 'Run across a neon track, dodge obstacles and try to keep the run going.', path: 'games/runner-3d/index.html', thumbnail: 'assets/img/game-runner.svg', category: 'Runner' },
-  { id: 'break-block', title: 'Break Block', description: 'Bounce the ball, clear the screen and keep the arcade rhythm going.', path: 'games/break-block/index.html', thumbnail: 'assets/img/game-break-block.svg', category: 'Arcade' }
+  { id: 'break-block', title: 'Break Block', description: 'Bounce the ball, clear the screen and keep the arcade rhythm going.', path: 'games/break-block/index.html', thumbnail: 'assets/img/game-break-block.svg', category: 'Arcade' },
+  { id: 'clicker', title: 'Clicker', description: 'Build an AI robot, buy upgrades and turn an old laptop into a futuristic machine.', path: 'games/clicker/index.html', thumbnail: 'assets/img/game-clicker.svg', category: 'Idle' },
+  { id: 'last-row-trouble', title: 'Last Row Trouble', description: 'Sneak out from the back row, complete cheeky missions and get back to your seat before the teacher notices.', path: 'games/last-row-trouble/index.html', thumbnail: 'assets/img/game-last-row-trouble.svg', category: 'Stealth' }
 ];
 
 var DEFAULT_TOP_PLAYERS = [

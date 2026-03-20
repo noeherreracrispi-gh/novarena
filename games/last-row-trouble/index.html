@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="ca">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Last Row Trouble</title>
+    <meta
+      name="description"
+      content="Escapa't de l'ultima fila, completa missions trapelles i torna al teu seient abans que el professor et descobreixi."
+    />
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <div id="app">
+      <canvas id="game"></canvas>
+
+      <div class="hud top-left">
+        <div class="badge">Last Row Trouble</div>
+        <div class="panel stat-grid">
+          <div>
+            <span class="label">Punts</span>
+            <strong id="score">0</strong>
+          </div>
+          <div>
+            <span class="label">Avisos</span>
+            <strong id="warnings">0 / 2</strong>
+          </div>
+          <div>
+            <span class="label">Professor</span>
+            <strong id="teacher-state">Mirant la classe</strong>
+          </div>
+          <div>
+            <span class="label">Temps</span>
+            <strong id="time-left">2:30</strong>
+          </div>
+          <div>
+            <span class="label">Fase</span>
+            <strong id="difficulty">Calma</strong>
+          </div>
+        </div>
+      </div>
+
+      <div class="hud top-right">
+        <div class="panel mission-panel">
+          <div class="label">Missio actual</div>
+          <h1 id="mission-title">Queda't assegut fins que comenci la classe</h1>
+          <p id="mission-description">Prem Inicia la classe i aprofita quan el professor escriu per fer trapelleries.</p>
+          <div class="mission-meta">
+            <span id="mission-points">0 punts</span>
+            <span id="bonus-points">Bonus 0</span>
+          </div>
+          <div class="progress-shell">
+            <div id="mission-progress" class="progress-bar"></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="hud bottom-left">
+        <div class="panel controls-panel">
+          <div class="label">Controls</div>
+          <p>WASD moure's</p>
+          <p>Shift correr</p>
+          <p>E interactuar</p>
+          <p>Espai aixecar-se / seure</p>
+        </div>
+      </div>
+
+      <div class="hud bottom-center">
+        <div id="status-message" class="status-message">Espera que el professor es giri cap a la pissarra.</div>
+        <div id="prompt" class="prompt hidden">Manten E per interactuar</div>
+      </div>
+
+      <div id="teacher-warning" class="teacher-warning hidden">Atencio: el professor es girara en 4 segons.</div>
+
+      <div id="teacher-jumpscare" class="jumpscare-overlay" aria-hidden="true">
+        <img id="teacher-jumpscare-image" src="./teacher-jumpscare.svg" alt="Cara del professor enfadat" />
+        <div id="teacher-jumpscare-copy" class="jumpscare-copy">No t'aixequis sense el meu permis</div>
+      </div>
+
+      <div id="start-screen" class="overlay visible">
+        <div class="card">
+          <p class="eyebrow">Mini-joc de navegador</p>
+          <h2>Last Row Trouble</h2>
+          <p>Escapa't de l'ultima fila, completa missions trapelles dins l'aula i torna al teu seient abans que el professor es giri.</p>
+          <ul>
+            <li>Els avisos s'acumulen si t'enxampen dret a prop del teu seient.</li>
+            <li>Si t'enxampen lluny del pupitre o fent una missio, aniras directe a direccio.</li>
+            <li>Les missions es tornen mes arriscades a mesura que avanca la classe.</li>
+          </ul>
+          <button id="start-button">Inicia la classe</button>
+        </div>
+      </div>
+
+      <div id="game-over-screen" class="overlay">
+        <div class="card">
+          <p class="eyebrow">Classe acabada</p>
+          <h2 id="game-over-title">Cap a direccio</h2>
+          <p id="game-over-reason">T'han atrapat fent coses que no tocaven.</p>
+          <div class="results">
+            <div>
+              <span class="label">Puntuacio final</span>
+              <strong id="final-score">0</strong>
+            </div>
+            <div>
+              <span class="label">Missions</span>
+              <strong id="final-missions">0</strong>
+            </div>
+            <div>
+              <span class="label">Temps</span>
+              <strong id="final-time">0s</strong>
+            </div>
+          </div>
+          <button id="restart-button">Torna-hi</button>
+        </div>
+      </div>
+    </div>
+
+    <script defer src="../../assets/js/novarena-sdk.js"></script>
+    <script defer src="./game.js"></script>
+  </body>
+</html>

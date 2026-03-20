@@ -1,0 +1,65 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1600 900" role="img" aria-labelledby="title desc">
+  <title id="title">Professor enfadat</title>
+  <desc id="desc">Primer pla fosc de la cara del professor amb els ulls oberts mirant de front.</desc>
+  <defs>
+    <radialGradient id="bg" cx="50%" cy="48%" r="70%">
+      <stop offset="0%" stop-color="#3d241d"/>
+      <stop offset="52%" stop-color="#1a0f10"/>
+      <stop offset="100%" stop-color="#040404"/>
+    </radialGradient>
+    <radialGradient id="skin" cx="48%" cy="46%" r="52%">
+      <stop offset="0%" stop-color="#7f5448"/>
+      <stop offset="58%" stop-color="#4b2d27"/>
+      <stop offset="100%" stop-color="#1d1213"/>
+    </radialGradient>
+    <radialGradient id="eyeWhite" cx="50%" cy="50%" r="62%">
+      <stop offset="0%" stop-color="#f9f1e8"/>
+      <stop offset="100%" stop-color="#d4c7bf"/>
+    </radialGradient>
+    <radialGradient id="pupil" cx="50%" cy="50%" r="58%">
+      <stop offset="0%" stop-color="#121212"/>
+      <stop offset="100%" stop-color="#000"/>
+    </radialGradient>
+    <filter id="softNoise">
+      <feTurbulence type="fractalNoise" baseFrequency="0.85" numOctaves="2" seed="8" result="noise"/>
+      <feColorMatrix in="noise" type="saturate" values="0"/>
+      <feComponentTransfer>
+        <feFuncA type="table" tableValues="0 0.045"/>
+      </feComponentTransfer>
+    </filter>
+  </defs>
+
+  <rect width="1600" height="900" fill="url(#bg)"/>
+
+  <ellipse cx="790" cy="460" rx="560" ry="470" fill="url(#skin)"/>
+  <ellipse cx="235" cy="585" rx="285" ry="360" fill="#241315" opacity="0.92"/>
+  <ellipse cx="1370" cy="635" rx="370" ry="460" fill="#160d0f" opacity="0.96"/>
+
+  <path d="M248 240c77-35 195-45 330-29 68 8 130 30 178 64-5 26-28 35-68 27-124-30-257-32-399-8-41 7-62-1-65-24 6-11 14-21 24-30z" fill="#050506"/>
+  <path d="M960 270c46-18 102-26 168-23 61 2 116 13 164 32 16 7 22 18 18 31-6 16-23 21-51 14-45-11-94-16-147-16-46 0-88 4-128 13-37 8-57 3-61-15 4-14 17-26 37-36z" fill="#0a090a" opacity="0.82"/>
+
+  <g transform="translate(456 410)">
+    <ellipse cx="0" cy="0" rx="136" ry="95" fill="#100d0e"/>
+    <ellipse cx="2" cy="0" rx="114" ry="72" fill="url(#eyeWhite)"/>
+    <ellipse cx="-16" cy="6" rx="44" ry="46" fill="url(#pupil)"/>
+    <circle cx="-30" cy="-10" r="9" fill="#f2e6d7" opacity="0.34"/>
+  </g>
+
+  <g transform="translate(1092 394)">
+    <ellipse cx="0" cy="0" rx="158" ry="104" fill="#100d0e"/>
+    <ellipse cx="-4" cy="0" rx="132" ry="80" fill="url(#eyeWhite)"/>
+    <ellipse cx="26" cy="8" rx="48" ry="50" fill="url(#pupil)"/>
+    <circle cx="14" cy="-8" r="10" fill="#f2e6d7" opacity="0.28"/>
+  </g>
+
+  <path d="M754 334c26 144 33 302 25 458-31-6-61-22-83-46 28-128 33-270 58-412z" fill="#5d372f" opacity="0.9"/>
+  <path d="M822 322c24 140 48 274 78 406-21 37-58 70-108 90-11-172-2-338 30-496z" fill="#3d231f" opacity="0.94"/>
+  <ellipse cx="790" cy="650" rx="56" ry="78" fill="#74463c" opacity="0.72"/>
+  <ellipse cx="792" cy="668" rx="32" ry="46" fill="#8a5a4a" opacity="0.48"/>
+
+  <ellipse cx="636" cy="556" rx="170" ry="222" fill="#2f1918" opacity="0.18"/>
+  <ellipse cx="1038" cy="540" rx="196" ry="242" fill="#130b0d" opacity="0.28"/>
+
+  <rect width="1600" height="900" fill="#000" opacity="0.14"/>
+  <rect width="1600" height="900" filter="url(#softNoise)" opacity="0.75"/>
+</svg>
