@@ -1,4 +1,5 @@
 const STORAGE_KEY = "novarena_idle_save_v1";
+const INTRO_BANNER_DURATION = 5200;
 
 // Upgrades repetibles per fer créixer els números de manera constant.
 const productionUpgrades = [
@@ -377,6 +378,7 @@ const elements = {
   stageFlavorDisplay: document.getElementById("stageFlavorDisplay"),
   stageProgressBar: document.getElementById("stageProgressBar"),
   scene: document.getElementById("scene"),
+  introBanner: document.getElementById("introBanner"),
   pcButton: document.getElementById("pcButton"),
   floatingLayer: document.getElementById("floatingLayer"),
   robotUpgradeLayer: document.getElementById("robotUpgradeLayer"),
@@ -392,6 +394,7 @@ const elements = {
 
 const shopButtons = new Map();
 const visibleRobotUpgrades = new Set();
+let introBannerTimeoutId = null;
 const basePartIds = [
   "repairScreen",
   "keyboardSwap",
@@ -756,7 +759,32 @@ function addMoney(amount) {
   state.totalEarned += amount;
 }
 
+function hideIntroBanner() {
+  if (!elements.introBanner) {
+    return;
+  }
+
+  elements.introBanner.classList.remove("is-visible");
+
+  if (introBannerTimeoutId) {
+    window.clearTimeout(introBannerTimeoutId);
+    introBannerTimeoutId = null;
+  }
+}
+
+function showIntroBanner() {
+  if (!elements.introBanner) {
+    return;
+  }
+
+  elements.introBanner.classList.add("is-visible");
+  introBannerTimeoutId = window.setTimeout(() => {
+    hideIntroBanner();
+  }, INTRO_BANNER_DURATION);
+}
+
 function handleClick() {
+  hideIntroBanner();
   const clickPower = getClickPower();
   const critStats = getCritStats();
   const isCrit = Math.random() < critStats.chance;
@@ -912,6 +940,7 @@ function init() {
   setupTabs();
   bindEvents();
   updateStats();
+  showIntroBanner();
   startIncomeLoop();
   startAutosaveLoop();
 }

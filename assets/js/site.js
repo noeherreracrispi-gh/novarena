@@ -8,11 +8,11 @@
 ];
 
 var DEFAULT_TOP_PLAYERS = [
-  { name: 'NovaRay', mockFavorite: 'Snake', mockTotal: 12450 },
-  { name: 'PixelMarta', mockFavorite: 'Tetris', mockTotal: 11820 },
-  { name: 'TurboNil', mockFavorite: 'Runner 3D', mockTotal: 10660 },
-  { name: 'ArcadeLia', mockFavorite: 'Break Block', mockTotal: 9980 },
-  { name: 'KiroZen', mockFavorite: 'Snake', mockTotal: 9450 }
+  { name: 'NovaRay', mockFavoriteId: 'snake', mockTotal: 12450 },
+  { name: 'PixelMarta', mockFavoriteId: 'tetris', mockTotal: 11820 },
+  { name: 'TurboNil', mockFavoriteId: 'runner3d', mockTotal: 10660 },
+  { name: 'ArcadeLia', mockFavoriteId: 'break-block', mockTotal: 9980 },
+  { name: 'KiroZen', mockFavoriteId: 'snake', mockTotal: 9450 }
 ];
 var HOME_CHALLENGE_COPY = {
   ca: {
@@ -123,7 +123,8 @@ function formatScore(value) {
 
 function localizedGameData(game) {
   return {
-    title: game.title,
+    id: game.id,
+    title: t('gamesData.' + game.id + '.title', game.title),
     description: t('gamesData.' + game.id + '.description', game.description),
     category: t('gamesData.' + game.id + '.category', game.category),
     path: game.path,
@@ -185,7 +186,8 @@ function relativeTime(value) {
 }
 
 function activityItemTemplate(item, games) {
-  var game = findGameById(games, item.game) || {
+  var game = findGameById(games, item.game);
+  var gameInfo = game ? localizedGameData(game) : {
     id: item.game,
     title: item.game,
     path: 'games/' + item.game + '/index.html'
@@ -194,8 +196,8 @@ function activityItemTemplate(item, games) {
 
   return [
     '<div class="activity-item">',
-    '  <strong>' + escapeHtml(item.playerName || t('common.player', 'Player')) + ' - ' + escapeHtml(game.title) + ' - ' + escapeHtml(formatScore(item.score)) + ' ' + escapeHtml(copy.points) + '</strong>',
-    '  <p><a href="' + escapeHtml(game.path) + '">' + escapeHtml(t('common.play', 'Play')) + ' ' + escapeHtml(game.title) + '</a></p>',
+    '  <strong>' + escapeHtml(item.playerName || t('common.player', 'Player')) + ' - ' + escapeHtml(gameInfo.title) + ' - ' + escapeHtml(formatScore(item.score)) + ' ' + escapeHtml(copy.points) + '</strong>',
+    '  <p><a href="' + escapeHtml(gameInfo.path) + '">' + escapeHtml(t('common.play', 'Play')) + ' ' + escapeHtml(gameInfo.title) + '</a></p>',
     '  <div class="activity-meta">' + escapeHtml(relativeTime(item.createdAt)) + '</div>',
     '</div>'
   ].join('');
@@ -246,7 +248,7 @@ function totalScore(player, gameIds) {
 
 function leaderboardTemplate(players, games) {
   var columns = games.map(function (game) {
-    return '<th>' + game.title + '</th>';
+    return '<th>' + localizedGameData(game).title + '</th>';
   }).join('');
 
   var rows = players.map(function (player, index) {
@@ -310,7 +312,7 @@ function favoriteGameTitle(player, games) {
     var score = player && player.scores && player.scores[game.id] ? player.scores[game.id].best : null;
     if (typeof score === 'number' && score > bestScore) {
       bestScore = score;
-      bestGame = game.title;
+      bestGame = localizedGameData(game).title;
     }
   });
 
@@ -319,7 +321,8 @@ function favoriteGameTitle(player, games) {
 
 function topPlayerTemplate(player, index, games, gameIds) {
   var total = typeof player.mockTotal === 'number' ? player.mockTotal : totalScore(player, gameIds);
-  var favorite = player.mockFavorite || favoriteGameTitle(player, games);
+  var favoriteGame = player.mockFavoriteId ? findGameById(games, player.mockFavoriteId) : null;
+  var favorite = favoriteGame ? localizedGameData(favoriteGame).title : (player.mockFavorite || favoriteGameTitle(player, games));
 
   return [
     '<article class="top-player-card">',

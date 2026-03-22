@@ -40,20 +40,34 @@ var I18N = {
     },
     gamesData: {
       tetris: {
+        title: 'Tetris',
         description: 'Col.loca les peces, completa linies i aguanta la pressio partida rere partida.',
         category: 'Puzzle'
       },
       snake: {
+        title: 'Snake',
         description: 'Menja, creix i no et tanquis. El classic continua sent una maquina de reflexos.',
         category: 'Classic'
       },
       runner3d: {
+        title: 'Neon Runner 3D',
         description: 'Corre per una pista neon, esquiva obstacles i intenta allargar la partida al maxim.',
         category: 'Runner'
       },
       'break-block': {
+        title: 'Break Block',
         description: 'Rebota la pilota, neteja la pantalla i mantingues el ritme de l\'arcade.',
         category: 'Arcade'
+      },
+      clicker: {
+        title: 'Clicker',
+        description: 'Construeix un robot IA, compra millores i converteix un portatil vell en una maquina futurista.',
+        category: 'Incremental'
+      },
+      'last-row-trouble': {
+        title: 'Problemes a l\'ultima fila',
+        description: 'Escapa\'t de l\'ultima fila, completa missions trapelles i torna al teu seient abans que el professor et descobreixi.',
+        category: 'Sigil'
       }
     },
     home: {
@@ -204,20 +218,34 @@ var I18N = {
     },
     gamesData: {
       tetris: {
+        title: 'Tetris',
         description: 'Coloca las piezas, completa lineas y aguanta la presion partida tras partida.',
         category: 'Puzzle'
       },
       snake: {
+        title: 'Snake',
         description: 'Come, crece y no te encierres. El clasico sigue siendo una maquina de reflejos.',
         category: 'Clasico'
       },
       runner3d: {
+        title: 'Neon Runner 3D',
         description: 'Corre por una pista neon, esquiva obstaculos e intenta alargar la partida al maximo.',
         category: 'Runner'
       },
       'break-block': {
+        title: 'Break Block',
         description: 'Haz rebotar la pelota, limpia la pantalla y manten el ritmo del arcade.',
         category: 'Arcade'
+      },
+      clicker: {
+        title: 'Clicker',
+        description: 'Construye un robot de IA, compra mejoras y convierte un portatil viejo en una maquina futurista.',
+        category: 'Incremental'
+      },
+      'last-row-trouble': {
+        title: 'Problemas en la ultima fila',
+        description: 'Escapate de la ultima fila, completa misiones traviesas y vuelve a tu asiento antes de que el profesor te descubra.',
+        category: 'Sigilo'
       }
     },
     home: {
@@ -368,20 +396,34 @@ var I18N = {
     },
     gamesData: {
       tetris: {
+        title: 'Tetris',
         description: 'Place the pieces, clear lines and keep the pressure under control round after round.',
         category: 'Puzzle'
       },
       snake: {
+        title: 'Snake',
         description: 'Eat, grow and do not trap yourself. This classic is still a reflex machine.',
         category: 'Classic'
       },
       runner3d: {
+        title: 'Neon Runner 3D',
         description: 'Run across a neon track, dodge obstacles and try to keep the run going.',
         category: 'Runner'
       },
       'break-block': {
+        title: 'Break Block',
         description: 'Bounce the ball, clear the screen and keep the arcade rhythm going.',
         category: 'Arcade'
+      },
+      clicker: {
+        title: 'Clicker',
+        description: 'Build an AI robot, buy upgrades and turn an old laptop into a futuristic machine.',
+        category: 'Idle'
+      },
+      'last-row-trouble': {
+        title: 'Last Row Trouble',
+        description: 'Sneak out from the back row, complete cheeky missions and get back to your seat before the teacher notices.',
+        category: 'Stealth'
       }
     },
     home: {
@@ -532,20 +574,34 @@ var I18N = {
     },
     gamesData: {
       tetris: {
+        title: 'Tetris',
         description: 'Posiziona i pezzi, completa le linee e reggi la pressione partita dopo partita.',
         category: 'Puzzle'
       },
       snake: {
+        title: 'Snake',
         description: 'Mangia, cresci e non bloccarti. Il classico resta una macchina di riflessi.',
         category: 'Classico'
       },
       runner3d: {
+        title: 'Neon Runner 3D',
         description: 'Corri su una pista neon, evita gli ostacoli e prova ad allungare la partita al massimo.',
         category: 'Runner'
       },
       'break-block': {
+        title: 'Break Block',
         description: 'Fai rimbalzare la palla, pulisci lo schermo e mantieni il ritmo arcade.',
         category: 'Arcade'
+      },
+      clicker: {
+        title: 'Clicker',
+        description: 'Costruisci un robot IA, compra potenziamenti e trasforma un vecchio portatile in una macchina futuristica.',
+        category: 'Incrementale'
+      },
+      'last-row-trouble': {
+        title: 'Guai all\'ultima fila',
+        description: 'Sgattaiola via dall\'ultima fila, completa missioni birichine e torna al tuo posto prima che l\'insegnante ti scopra.',
+        category: 'Furtivo'
       }
     },
     home: {
